@@ -299,3 +299,8 @@ body.nomo #bgfx .sweep{display:none}
 .pkc button:hover{background:#ff5d7a;color:#fff}
 .slot.on{background-color:#fff;background-size:cover;background-position:50% 18%;background-repeat:no-repeat}
 @media (min-width:900px) and (hover:hover){.pk{flex-wrap:wrap;overflow:visible;-webkit-mask:none;mask:none}.pkc{max-width:220px}.pkc b{font-size:13px}}
+/* 슬로건: 오른쪽 위 (설정 ⚙ 왼쪽) */
+.slogan{position:fixed;top:11px;right:58px;height:30px;z-index:45;pointer-events:none;filter:drop-shadow(0 0 6px rgba(34,230,255,.35))}
+body[data-scr=sVote] .hi{padding-right:118px}
+@media (max-width:360px){.slogan{height:30px}body[data-scr=sVote] .hi{padding-right:104px}}
+@media (min-width:900px) and (hover:hover){.slogan{height:54px;top:14px;right:66px}body[data-scr=sVote] .hi{padding-right:0}}

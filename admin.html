@@ -77,6 +77,8 @@ tr.cutline td{border-bottom:3px dashed var(--gd)}
 .rm .sbtn{padding:3px 8px;font-size:12px;border-radius:8px}
 @media print{body{background:#fff}.wrap,.toast,.rep .bar2{display:none!important}.rep{position:static;background:#fff;padding:0;display:block}.paper{padding:0;max-width:none}}
 
+.aslogan{height:46px;margin-right:6px;filter:drop-shadow(0 0 6px rgba(34,230,255,.3))}
+.lslogan{position:fixed;top:14px;right:20px;height:52px;z-index:40;pointer-events:none;filter:drop-shadow(0 0 6px rgba(34,230,255,.3))}
 /* ── 관리자 휴대폰 화면: 위쪽 탭으로 한 부분씩 ── */
 .mtabs{display:none}
 @media (max-width:700px){
@@ -85,6 +87,8 @@ tr.cutline td{border-bottom:3px dashed var(--gd)}
   header img{width:36px;height:36px}
   header h1{font-size:18px}header p{display:none}
   header .sbtn{padding:7px 10px;font-size:13px}
+  .lslogan{height:30px;top:12px;right:12px}
+  header{padding-right:64px;flex-wrap:nowrap}#bRefresh{display:none}
   .mtabs{display:flex;gap:6px;position:sticky;top:0;z-index:30;margin:0 -12px 12px;padding:8px 12px;background:rgba(3,11,26,.97);border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
   .mtabs::-webkit-scrollbar{display:none}
   .mtabs button{flex:1 0 auto;font:inherit;font-size:14px;font-weight:800;color:var(--mut);background:transparent;border:1.5px solid var(--line);border-radius:999px;padding:7px 12px;cursor:pointer}
@@ -110,6 +114,7 @@ tr.cutline td{border-bottom:3px dashed var(--gd)}
 <body>
 <div class="toast" id="toast"></div>
 
+<img class="lslogan" src="assets/slogan.png" alt="#나의 자랑 우리 중랑">
 <div class="wrap">
   <div class="login" id="login">
     <img src="assets/logo.png" alt="AI파트너스">
@@ -195,9 +200,9 @@ tr.cutline td{border-bottom:3px dashed var(--gd)}
   <textarea id="rText"></textarea>
 </div>
 
-<script src="assets/config.js?v=20261120s"></script>
+<script src="assets/config.js?v=20261120u"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="assets/poster.js?v=20261120s"></script>
-<script src="assets/admin.js?v=20261120s"></script>
+<script src="assets/poster.js?v=20261120u"></script>
+<script src="assets/admin.js?v=20261120u"></script>
 </body>
 </html>
