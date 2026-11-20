@@ -5,10 +5,9 @@ const DEMO = !(CFG.supabaseUrl && CFG.supabaseKey);
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const store = { get(k, d) { try { const v = localStorage.getItem('ax10_' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
                 set(k, v) { try { localStorage.setItem('ax10_' + k, JSON.stringify(v)); } catch (e) {} } };
-const CAT = { doc: { name: '문서 작성', c: '#22e6ff', ju: '글주임', type: '문서 혁신가형', desc: '쓰고 만드는 일을 AI로 바꾸고 싶은 선정위원' },
-              law: { name: '법령·자료 찾기', c: '#ffbf4a', ju: '눈주임', type: '근거 탐정형', desc: '근거와 자료를 정확히 찾아내는 선정위원' },
-              ops: { name: '업무 관리', c: '#4d8dff', ju: '길주임', type: '업무 설계자형', desc: '일하는 흐름을 똑똑하게 설계하는 선정위원' },
-              civ: { name: '민원·의회·생활', c: '#ff4fd8', ju: '말주임', type: '주민 소통가형', desc: '주민과 의회 곁에서 소통을 바꾸는 선정위원' } };
+const CAT = { L: { name: 'L · Life', full: '주민 생활', c: '#ff4fd8', ju: '말주임', type: '생활 혁신가형', desc: '주민 삶 가까이에서 AI를 쓰고 싶은 선정위원' },
+              O: { name: 'O · Office', full: '행정 업무', c: '#22e6ff', ju: '글주임', type: '행정 혁신가형', desc: '일하는 방식을 AI로 바꾸고 싶은 선정위원' } };
+const LEG = { doc: { type: '문서 혁신가형', c: '#22e6ff' }, law: { type: '근거 탐정형', c: '#ffbf4a' }, ops: { type: '업무 설계자형', c: '#4d8dff' }, civ: { type: '주민 소통가형', c: '#ff4fd8' } };
 const TAGS = { 1: 'hwp me', 2: 'hwp team', 3: 'me talk', 4: 'excel team', 5: 'hwp me field', 6: 'team', 7: 'excel hwp me', 8: 'ai me', 9: 'ai me', 10: 'ai citizen',
   11: 'me', 12: 'web team', 13: 'web team', 14: 'team', 15: 'web team', 16: 'web me', 17: 'web team', 18: 'web team', 19: 'web team', 20: 'excel me',
   21: 'team', 22: 'me', 23: 'web team', 24: 'me field', 25: 'citizen talk', 26: 'me talk', 27: 'team talk', 28: 'excel team', 29: 'web citizen field', 30: 'web citizen' };
@@ -164,7 +163,7 @@ function renderCards() {
     if (!list.length) return; shown += list.length;
     const mine = cands.filter(c => c.cat === k && picks.includes(c.no)).length;
     const h = document.createElement('div'); h.className = 'cat'; h.style.setProperty('--c', v.c); h.dataset.cat = k;
-    h.innerHTML = `<img src="${img(list[0].no)}" alt=""><h3>${v.name}</h3>${mine ? `<i class="mine">고름 ${mine}</i>` : ''}<em>${v.ju} 계열 · ${cands.filter(c => c.cat === k).length}종</em>`; box.appendChild(h);
+    h.innerHTML = `<img src="${img(list[0].no)}" alt=""><h3>${v.name}</h3>${mine ? `<i class="mine">고름 ${mine}</i>` : ''}<em>${v.full} · ${cands.filter(c => c.cat === k).length}종</em>`; box.appendChild(h);
     const wrap = view === 'grid' ? Object.assign(document.createElement('div'), { className: 'gwrap' }) : box;
     if (wrap !== box) box.appendChild(wrap);
     list.forEach(c => wrap.appendChild(cardEl(c, v.c)));
@@ -309,7 +308,7 @@ $('#bReco').onclick = () => {
   $$('#recoSheet .opts button').forEach(b => b.onclick = () => { ans[b.dataset.q] = b.dataset.v; $$(`#recoSheet [data-q="${b.dataset.q}"]`).forEach(x => x.classList.toggle('on', x === b)); buzz(8); });
   $('#recoGo').onclick = () => {
     if (ans.filter(Boolean).length < 3) { toast('세 질문에 모두 답해 주세요'); return; }
-    const sc = cands.map(c => ({ no: c.no, s: (c.cat === ans[0] ? 3 : 0) + ((TAGS[c.no] || '').includes(ans[1]) ? 2 : 0) + ((TAGS[c.no] || '').includes(ans[2]) ? 2 : 0) + Math.random() * .1 }))
+    const sc = cands.map(c => ({ no: c.no, s: ((c.area || c.cat) === ans[0] ? 3 : 0) + ((TAGS[c.no] || '').includes(ans[1]) ? 2 : 0) + ((TAGS[c.no] || '').includes(ans[2]) ? 2 : 0) + Math.random() * .1 }))
       .sort((a, b) => b.s - a.s).slice(0, MAX);
     recoSet = new Set(sc.map(x => x.no)); closeModal('#mReco'); filter = 'all'; renderTabs(); renderCards(); buzz([10, 40, 10]);
     toast('추천 후보에 금빛 불이 켜졌어요. 마음에 드는 것만 골라 주세요!', 2600);
@@ -437,14 +436,14 @@ async function makeResultPoster(r) {
     y += 86; }
   // 분야별
   y += 30; g.fillStyle = '#ffbf4a'; g.font = F(900, 38); g.fillText('분야별 선정', 80, y + 20); y += 50;
-  const ks = Object.keys(CAT); const bw4 = (W - 160 - 3 * 16) / 4;
+  const ks = Object.keys(CAT); const bw4 = (W - 160 - (ks.length - 1) * 16) / ks.length;
   ks.forEach((k, i) => { const n = top.filter(t => (byNo[t.no] || {}).cat === k).length, all = cands.filter(x => x.cat === k).length, x = 80 + i * (bw4 + 16);
     g.fillStyle = 'rgba(14,40,78,.85)'; roundRect(g, x, y, bw4, 130, 18); g.fill(); g.strokeStyle = CAT[k].c; g.lineWidth = 2; roundRect(g, x, y, bw4, 130, 18); g.stroke();
     g.textAlign = 'center'; g.fillStyle = CAT[k].c; g.font = F(800, 24); g.fillText(CAT[k].name, x + bw4 / 2, y + 40); g.fillStyle = '#fff'; g.font = F(900, 50); g.fillText(`${n}`, x + bw4 / 2 - 20, y + 105); g.fillStyle = '#9fc6d8'; g.font = F(700, 24); g.fillText(`/${all}`, x + bw4 / 2 + 30, y + 105); g.textAlign = 'left'; });
   y += 170;
   // 유형 비율
   g.fillStyle = '#ffbf4a'; g.font = F(900, 38); g.fillText('선정위원 유형', 80, y + 20); y += 46;
-  const T = { doc: CAT.doc, law: CAT.law, ops: CAT.ops, civ: CAT.civ, all: { type: '올라운더형', c: '#ffffff' } };
+  const T = { ...LEG, ...CAT, all: { type: '올라운더형', c: '#ffffff' } };
   const ents = Object.entries(r.types || {}).sort((p, q) => q[1] - p[1]).slice(0, 5);
   ents.forEach(([k, v]) => { const tt = T[k] || T.all; g.fillStyle = '#d6ecf6'; g.font = F(800, 26); g.fillText(tt.type, 80, y + 30); g.fillStyle = 'rgba(255,255,255,.08)'; roundRect(g, 300, y + 8, W - 460, 30, 15); g.fill(); g.fillStyle = tt.c; roundRect(g, 300, y + 8, Math.max(20, (W - 460) * v / 100), 30, 15); g.fill(); g.fillStyle = '#fff'; g.font = F(900, 26); g.fillText(v + '%', W - 145, y + 32); y += 50; });
   y += 30;
@@ -466,11 +465,11 @@ $('#bStart').onclick = () => { buzz(10); blip(600); show('sWho'); setTimeout(() 
   $('#bStart').disabled = true; $('#count').textContent = '투표 정보를 불러오는 중…';
   if (DEMO) $('#demoTag').innerHTML = '<span class="demo">미리보기 모드 · 예시 명단(김하늘, 이바다 등)으로 시험해 보세요</span>';
   try {
-    const cj = await fetch('assets/candidates.json?v=20261120q').then(r => r.json()).catch(() => null);
+    const cj = await fetch('assets/candidates.json?v=pilot1').then(r => r.json()).catch(() => null);
     if (DEMO) Demo.setCands(cj || []);
     info = await rpc('ax_round_info', { p_round: ROUND });
     cands = (DEMO ? cj : await rpc('ax_candidates', { p_round: ROUND })) || [];
-    if (!DEMO && cj) cands = cands.map(c => Object.assign({}, cj.find(x => x.no === c.no) || {}, c));
+    if (!DEMO && cj) cands = cands.map(c => { const j = cj.find(x => x.no === c.no) || {}; return Object.assign({}, j, c, j.cat ? { cat: j.cat, area: j.area || c.cat } : {}); });
   } catch (e) { toast('투표 정보를 불러오지 못했어요. 새로고침해 주세요.', 4000); return; }
   if (!info) { toast('투표 설정을 찾지 못했어요.'); return; }
   byNo = Object.fromEntries(cands.map(c => [c.no, c])); MAX = info.max_pick || 7; $('#maxTxt').textContent = MAX;

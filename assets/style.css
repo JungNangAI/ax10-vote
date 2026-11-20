@@ -348,3 +348,16 @@ body.nomo #bgov *{animation:none!important}
 .sheet .nsave{font-size:12px;color:var(--mut);text-align:right;min-height:16px;margin-top:3px}
 .card .nb{position:absolute;left:10px;top:8px;font-size:11.5px;font-weight:900;color:#ffbf4a;background:rgba(0,0,0,.45);border-radius:8px;padding:1px 6px;z-index:2}
 #cards.grid .card .nb{left:6px;top:6px}
+/* PILOT 5대 전략 띠 (첫 화면) */
+.pilot{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:4px 0 12px}
+.pilot span{display:flex;flex-direction:column;align-items:center;padding:8px 2px 7px;border-radius:14px;border:1.5px dashed rgba(255,255,255,.18);background:rgba(255,255,255,.03)}
+.pilot b{font-size:26px;font-weight:900;line-height:1;color:rgba(255,255,255,.25)}
+.pilot i{font-style:normal;font-size:10.5px;font-weight:700;color:rgba(255,255,255,.3);margin-top:4px;text-align:center;line-height:1.2}
+.pilot .on{border-style:solid;position:relative;isolation:isolate}
+.pilot .on.l{--c:#ff4fd8}.pilot .on.o{--c:#22e6ff}
+.pilot .on{border-color:var(--c);background:color-mix(in srgb,var(--c) 16%,#061328);box-shadow:0 0 16px -4px var(--c)}
+.pilot .on b{color:var(--c);text-shadow:0 0 14px var(--c)}
+.pilot .on i{color:#fff}
+.pilot .on:before{content:'';position:absolute;inset:-1.5px;border-radius:inherit;padding:2px;z-index:-1;background:conic-gradient(from var(--b),transparent 0 55%,var(--c) 70%,#fff 76%,var(--c) 82%,transparent 95%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:drl2 2.4s linear infinite}
+.pilot .on.o:before{animation-delay:-1.2s}
+body.nomo .pilot .on:before{animation:none}

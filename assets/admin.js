@@ -2,7 +2,7 @@
 const CFG = window.AX_CONFIG || {}; const ROUND = CFG.round || 'ax30-1'; const DEMO = !(CFG.supabaseUrl && CFG.supabaseKey);
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const CATC = { doc: '#22e6ff', law: '#ffbf4a', ops: '#4d8dff', civ: '#ff4fd8' };
+const CATC = { L: '#ff4fd8', O: '#22e6ff' };
 function toast(t, ms = 2000) { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => el.classList.remove('on'), ms); }
 const sbRpc = async (fn, args) => { const r = await fetch(CFG.supabaseUrl.replace(/\/$/, '') + '/rest/v1/rpc/' + fn, { method: 'POST', headers: { apikey: CFG.supabaseKey, 'Content-Type': 'application/json' }, body: JSON.stringify(args || {}) }); const t = await r.text(); let d = null; try { d = t ? JSON.parse(t) : null; } catch (e) { d = t; } return r.ok ? { data: d, error: null } : { data: null, error: d || { message: 'HTTP ' + r.status } }; };
 const sb = DEMO ? null : { rpc: sbRpc };
@@ -29,6 +29,7 @@ if (DEMO) $('#demoNote').textContent = '미리보기 모드: 아무 열쇠나 �
 let ov = null, timer = null, nmap = {};
 async function load() {
   try { ov = await rpc('ax_admin_overview', { p_round: ROUND, p_key: KEY }); } catch (e) { toast('불러오지 못했어요'); return; }
+  if (ov && ov.tally) ov.tally.forEach(t => { const c = cands.find(x => x.no === t.no); if (c) t.cat = c.cat; });
   if (!ov || !ov.ok) { toast('관리 열쇠가 맞지 않아요'); $('#login').style.display = 'block'; $('#main').style.display = 'none'; return; }
   try { sessionStorage.setItem('ax10_admin', KEY); } catch (e) {}
   $('#login').style.display = 'none'; $('#main').style.display = 'block';
@@ -122,8 +123,8 @@ $('#bPromote').onclick = async () => { const k = $('#pKey').value.trim(); if (!k
   const r = await rpc('ax_admin_promote', { p_round: ROUND, p_key: KEY, p_new: $('#pNew').value.trim(), p_title: '2차 전 직원 투표', p_top: +$('#pTop').value, p_max: +$('#pMax').value, p_closes: new Date($('#pCloses').value).toISOString(), p_new_key: k });
   toast(r && r.ok ? '2차 투표를 만들었어요. config.js의 round 값을 바꾸면 2차로 전환돼요' : '만들지 못했어요', 3500); };
 // ───────── 결과보고서 ─────────
-const CATN = { doc: '문서 작성', law: '법령·자료 찾기', ops: '업무 관리', civ: '민원·의회·생활' };
-const TYPEN = { doc: '문서 혁신가형', law: '근거 탐정형', ops: '업무 설계자형', civ: '주민 소통가형' };
+const CATN = { L: 'L · Life(주민 생활)', O: 'O · Office(행정 업무)' };
+const TYPEN = { L: '생활 혁신가형', O: '행정 혁신가형' };
 const W = '일월화수목금토';
 const fd = (iso, t = true) => { const d = new Date(iso); return `’${String(d.getFullYear()).slice(2)}. ${d.getMonth() + 1}. ${d.getDate()}.(${W[d.getDay()]})${t ? ' ' + d.getHours() + '시' + (d.getMinutes() ? ' ' + d.getMinutes() + '분' : '') : ''}`; };
 function buildReport() {
@@ -201,5 +202,5 @@ async function posterDown(internal) {
 }
 document.body.dataset.mt = 'now';
 document.querySelectorAll('#mtabs [data-mt]').forEach(b => b.onclick = () => { document.body.dataset.mt = b.dataset.mt; document.querySelectorAll('#mtabs [data-mt]').forEach(x => x.classList.toggle('on', x === b)); scrollTo(0, 0); });
-fetch('assets/candidates.json?v=20261120q').then(r => r.json()).then(c => { cands = c; if (KEY) load(); }).catch(() => {});
+fetch('assets/candidates.json?v=pilot1').then(r => r.json()).then(c => { cands = c; if (KEY) load(); }).catch(() => {});
 })();

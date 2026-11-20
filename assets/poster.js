@@ -4,10 +4,9 @@ let cands = [], byNo = {};
 const img = n => `assets/char/v${String(n).padStart(2, '0')}.webp`;
 function loadImg(src) { return new Promise(r => { const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = src; }); }
 function roundRect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
-const CAT = { doc: { name: '문서 작성', c: '#22e6ff', ju: '글주임', type: '문서 혁신가형', desc: '쓰고 만드는 일을 AI로 바꾸고 싶은 선정위원' },
-              law: { name: '법령·자료 찾기', c: '#ffbf4a', ju: '눈주임', type: '근거 탐정형', desc: '근거와 자료를 정확히 찾아내는 선정위원' },
-              ops: { name: '업무 관리', c: '#4d8dff', ju: '길주임', type: '업무 설계자형', desc: '일하는 흐름을 똑똑하게 설계하는 선정위원' },
-              civ: { name: '민원·의회·생활', c: '#ff4fd8', ju: '말주임', type: '주민 소통가형', desc: '주민과 의회 곁에서 소통을 바꾸는 선정위원' } };
+const CAT = { L: { name: 'L · Life', full: '주민 생활', c: '#ff4fd8', ju: '말주임', type: '생활 혁신가형', desc: '주민 삶 가까이에서 AI를 쓰고 싶은 선정위원' },
+              O: { name: 'O · Office', full: '행정 업무', c: '#22e6ff', ju: '글주임', type: '행정 혁신가형', desc: '일하는 방식을 AI로 바꾸고 싶은 선정위원' } };
+const LEG = { doc: { type: '문서 혁신가형', c: '#22e6ff' }, law: { type: '근거 탐정형', c: '#ffbf4a' }, ops: { type: '업무 설계자형', c: '#4d8dff' }, civ: { type: '주민 소통가형', c: '#ff4fd8' } };
 async function makeResultPoster(r, opt = {}) {
   try { await document.fonts.load('900 40px "Noto Sans KR"'); } catch (e) {}
   const top = r.items.slice(0, 20); const W = 1080;
@@ -40,14 +39,14 @@ async function makeResultPoster(r, opt = {}) {
     y += 86; }
   // 분야별
   y += 30; g.fillStyle = '#ffbf4a'; g.font = F(900, 38); g.fillText('분야별 선정', 80, y + 20); y += 50;
-  const ks = Object.keys(CAT); const bw4 = (W - 160 - 3 * 16) / 4;
+  const ks = Object.keys(CAT); const bw4 = (W - 160 - (ks.length - 1) * 16) / ks.length;
   ks.forEach((k, i) => { const n = top.filter(t => (byNo[t.no] || {}).cat === k).length, all = cands.filter(x => x.cat === k).length, x = 80 + i * (bw4 + 16);
     g.fillStyle = 'rgba(14,40,78,.85)'; roundRect(g, x, y, bw4, 130, 18); g.fill(); g.strokeStyle = CAT[k].c; g.lineWidth = 2; roundRect(g, x, y, bw4, 130, 18); g.stroke();
     g.textAlign = 'center'; g.fillStyle = CAT[k].c; g.font = F(800, 24); g.fillText(CAT[k].name, x + bw4 / 2, y + 40); g.fillStyle = '#fff'; g.font = F(900, 50); g.fillText(`${n}`, x + bw4 / 2 - 20, y + 105); g.fillStyle = '#9fc6d8'; g.font = F(700, 24); g.fillText(`/${all}`, x + bw4 / 2 + 30, y + 105); g.textAlign = 'left'; });
   y += 170;
   // 유형 비율
   g.fillStyle = '#ffbf4a'; g.font = F(900, 38); g.fillText('선정위원 유형', 80, y + 20); y += 46;
-  const T = { doc: CAT.doc, law: CAT.law, ops: CAT.ops, civ: CAT.civ, all: { type: '올라운더형', c: '#ffffff' } };
+  const T = { ...LEG, ...CAT, all: { type: '올라운더형', c: '#ffffff' } };
   const ents = Object.entries(r.types || {}).sort((p, q) => q[1] - p[1]).slice(0, 5);
   ents.forEach(([k, v]) => { const tt = T[k] || T.all; g.fillStyle = '#d6ecf6'; g.font = F(800, 26); g.fillText(tt.type, 80, y + 30); g.fillStyle = 'rgba(255,255,255,.08)'; roundRect(g, 300, y + 8, W - 460, 30, 15); g.fill(); g.fillStyle = tt.c; roundRect(g, 300, y + 8, Math.max(20, (W - 460) * v / 100), 30, 15); g.fill(); g.fillStyle = '#fff'; g.font = F(900, 26); g.fillText(v + '%', W - 145, y + 32); y += 50; });
   y += 30;

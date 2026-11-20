@@ -1,7 +1,7 @@
 [
  {
   "no": 1,
-  "cat": "doc",
+  "cat": "O",
   "orig": "ReportAI",
   "sub": "계획서·공문 초안 도우미",
   "line": "목적만 알려 주세요, 초안은 제가!",
@@ -26,11 +26,12 @@
    "level": "하",
    "period": "2주",
    "form": "AI 스킬"
-  }
+  },
+  "area": "doc"
  },
  {
   "no": 2,
-  "cat": "doc",
+  "cat": "O",
   "orig": "｢글주임｣ AI배포",
   "sub": "인사말씀·보도자료·카드뉴스",
   "line": "보도자료부터 카드뉴스까지!",
@@ -48,11 +49,12 @@
    "https://gitlab.aigov.go.kr/mukju9/press-release-proofreader",
    "https://github.com/mouseco/public-cardnews"
   ],
-  "feas": null
+  "feas": null,
+  "area": "doc"
  },
  {
   "no": 3,
-  "cat": "doc",
+  "cat": "O",
   "orig": "회의록 작성 도우미",
   "sub": "회의 녹음→회의록 정리",
   "line": "회의록은 제가 정리할게요",
@@ -74,11 +76,12 @@
    "level": "하",
    "period": "1~2주",
    "form": "AI 스킬"
-  }
+  },
+  "area": "doc"
  },
  {
   "no": 4,
-  "cat": "doc",
+  "cat": "O",
   "orig": "AI Survey Insight",
   "sub": "설문 결과 자동 분석",
   "line": "주관식도 척척 묶어 드려요",
@@ -101,11 +104,12 @@
    "level": "하",
    "period": "2주",
    "form": "AI 스킬"
-  }
+  },
+  "area": "doc"
  },
  {
   "no": 5,
-  "cat": "doc",
+  "cat": "O",
   "orig": "순찰일지",
   "sub": "현장점검 사진→결과보고서",
   "line": "사진 찍으면 보고서 완성!",
@@ -126,11 +130,12 @@
    "level": "하",
    "period": "2~3주",
    "form": "AI 스킬"
-  }
+  },
+  "area": "doc"
  },
  {
   "no": 6,
-  "cat": "doc",
+  "cat": "O",
   "orig": "계약서류 작성지원 도구",
   "sub": "수의계약 서류 한 번에 작성",
   "line": "서류는 한 번에 꾹!",
@@ -152,11 +157,12 @@
    "level": "하",
    "period": "1~2주",
    "form": "브라우저만으로 작동"
-  }
+  },
+  "area": "doc"
  },
  {
   "no": 7,
-  "cat": "doc",
+  "cat": "O",
   "orig": "AI 업무도구",
   "sub": "문서 잡일 30종",
   "line": "문서 잡일은 척척!",
@@ -173,11 +179,12 @@
    "https://fake.choshg.com/",
    "https://gitlab.aigov.go.kr/cathode/pdf-dokkaebi-bangmang-i"
   ],
-  "feas": null
+  "feas": null,
+  "area": "doc"
  },
  {
   "no": 8,
-  "cat": "law",
+  "cat": "O",
   "orig": "국가법령정보·Korean Stats MCP",
   "sub": "법령·통계·예산 한 번에 묻기",
   "line": "법·통계·예산, 한 번에 찾아요",
@@ -201,11 +208,12 @@
    "level": "중",
    "period": "3~4주",
    "form": "AI에 자료 연결"
-  }
+  },
+  "area": "law"
  },
  {
   "no": 9,
-  "cat": "law",
+  "cat": "O",
   "orig": "규정 MCP 생성기",
   "sub": "재무·계약 규정 물어보기",
   "line": "계약 규정, 조문까지 콕!",
@@ -227,11 +235,12 @@
    "level": "하",
    "period": "1~2주",
    "form": "AI 스킬"
-  }
+  },
+  "area": "law"
  },
  {
   "no": 10,
-  "cat": "law",
+  "cat": "L",
   "orig": "복지톡",
   "sub": "복지지침 물어보기",
   "line": "복지 기준, 쪽수까지 알려 드려요",
@@ -252,11 +261,12 @@
    "level": "하",
    "period": "2주",
    "form": "AI 스킬"
-  }
+  },
+  "area": "law"
  },
  {
   "no": 11,
-  "cat": "law",
+  "cat": "O",
   "orig": "외부강의등 신고 가이드",
   "sub": "청탁금지법 판단 도우미",
   "line": "받아도 될까? 제가 판단해 줄게요",
@@ -278,11 +288,12 @@
    "level": "하",
    "period": "1~2주",
    "form": "브라우저만으로 작동"
-  }
+  },
+  "area": "law"
  },
  {
   "no": 12,
-  "cat": "law",
+  "cat": "O",
   "orig": "K-지방직 정책서랍",
   "sub": "다른 지자체 예산서·업무계획 찾기",
   "line": "다른 구 예산서, 서랍에 다 있어요",
@@ -304,11 +315,12 @@
    "level": "하",
    "period": "2~3주",
    "form": "AI에 자료 연결"
-  }
+  },
+  "area": "law"
  },
  {
   "no": 13,
-  "cat": "law",
+  "cat": "O",
   "orig": "나라장터 MCP",
   "sub": "나라장터 비슷한 계약 찾기",
   "line": "비슷한 계약 금액, 찾아왔어요",
@@ -331,11 +343,12 @@
    "level": "하",
    "period": "2주",
    "form": "AI에 자료 연결"
-  }
+  },
+  "area": "law"
  },
  {
   "no": 14,
-  "cat": "law",
+  "cat": "O",
   "orig": "ir-search",
   "sub": "공모사업 알리미",
   "line": "새 공모 떴어요!",
@@ -358,11 +371,12 @@
    "level": "중",
    "period": "3~4주",
    "form": "AI 스킬"
-  }
+  },
+  "area": "law"
  },
  {
   "no": 15,
-  "cat": "law",
+  "cat": "O",
   "orig": "서울 자치구 조례 정합성 지도",
   "sub": "낡은 조례 찾기 지도",
   "line": "낡은 조례, 지도로 찾았어요",
@@ -386,11 +400,12 @@
    "level": "중",
    "period": "3~4주",
    "form": "브라우저만으로 작동"
-  }
+  },
+  "area": "law"
  },
  {
   "no": 16,
-  "cat": "law",
+  "cat": "O",
   "orig": "신규자 지식창고",
   "sub": "신규공무원 업무안내 사이트",
   "line": "새내기님, 환영해요!",
@@ -407,11 +422,12 @@
    "https://hskb.netlify.app",
    "https://works.ggc.go.kr/kb/"
   ],
-  "feas": null
+  "feas": null,
+  "area": "law"
  },
  {
   "no": 17,
-  "cat": "ops",
+  "cat": "O",
   "orig": "관리자 대시보드",
   "sub": "자료를 한 공간에 정리",
   "line": "한 번 쓰면 관리자 화면 완성",
@@ -432,11 +448,12 @@
    "level": "중",
    "period": "3~4주",
    "form": "웹사이트"
-  }
+  },
+  "area": "ops"
  },
  {
   "no": 18,
-  "cat": "ops",
+  "cat": "O",
   "orig": "지자체 주간행사 캘린더",
   "sub": "주간행사 공유 달력",
   "line": "구 전체 행사, 한 달력에!",
@@ -456,11 +473,12 @@
    "level": "중",
    "period": "2~3주",
    "form": "웹사이트"
-  }
+  },
+  "area": "ops"
  },
  {
   "no": 19,
-  "cat": "ops",
+  "cat": "O",
   "orig": "시장실 결재 대기 현황판",
   "sub": "구청장 결재 대기 순서 안내",
   "line": "결재 순서, 화면으로 알려 드려요",
@@ -481,11 +499,12 @@
    "level": "하",
    "period": "1~2주",
    "form": "웹사이트"
-  }
+  },
+  "area": "ops"
  },
  {
   "no": 20,
-  "cat": "ops",
+  "cat": "O",
   "orig": "서무실록",
   "sub": "서무업무 AX 패키지",
   "line": "급량비·여비 정산 끝!",
@@ -509,11 +528,12 @@
    "level": "중",
    "period": "3~4주",
    "form": "내 PC 도구"
-  }
+  },
+  "area": "ops"
  },
  {
   "no": 21,
-  "cat": "ops",
+  "cat": "O",
   "orig": "공무원 필수교육 이수 관리 시스템",
   "sub": "수료증 올리면 이수 현황 집계",
   "line": "수료증만 올리면 집계 끝",
@@ -534,11 +554,12 @@
    "level": "하",
    "period": "2주",
    "form": "웹사이트"
-  }
+  },
+  "area": "ops"
  },
  {
   "no": 22,
-  "cat": "ops",
+  "cat": "O",
   "orig": "내편 이음",
   "sub": "인수인계서 자동 작성",
   "line": "업무, 잘 넘겨 드려요!",
@@ -561,11 +582,12 @@
    "level": "하",
    "period": "2주",
    "form": "내 PC 도구"
-  }
+  },
+  "area": "ops"
  },
  {
   "no": 23,
-  "cat": "ops",
+  "cat": "O",
   "orig": "출석시스템",
   "sub": "QR 출석부터 만족도조사 및 결과보고서까지",
   "line": "QR로 출석부터 결과보고까지",
@@ -582,11 +604,12 @@
    "https://jungnangai.github.io/edu-attendance/",
    "https://gitlab.aigov.go.kr/gslee0819/townhall-kit"
   ],
-  "feas": null
+  "feas": null,
+  "area": "ops"
  },
  {
   "no": 24,
-  "cat": "ops",
+  "cat": "O",
   "orig": "노미스(No-Miss)",
   "sub": "빠뜨림 없는 업무 대장",
   "line": "빠뜨림 없이 하나씩 체크!",
@@ -607,11 +630,12 @@
    "level": "하",
    "period": "2~3주",
    "form": "브라우저만으로 작동"
-  }
+  },
+  "area": "ops"
  },
  {
   "no": 25,
-  "cat": "civ",
+  "cat": "L",
   "orig": "모두의 민원콜",
   "sub": "민원 담당 부서 찾기·답변 초안",
   "line": "어느 부서인지 찾아 드릴게요",
@@ -634,11 +658,12 @@
    "level": "하",
    "period": "1~2주",
    "form": "AI 스킬"
-  }
+  },
+  "area": "civ"
  },
  {
   "no": 26,
-  "cat": "civ",
+  "cat": "L",
   "orig": "당직AI",
   "sub": "당직 민원 대처·당직일지 도우미",
   "line": "밤에도 든든한 당직 도우미",
@@ -652,11 +677,12 @@
   "dept": "행정지원과 (전 직원)",
   "built": false,
   "links": [],
-  "feas": null
+  "feas": null,
+  "area": "civ"
  },
  {
   "no": 27,
-  "cat": "civ",
+  "cat": "O",
   "orig": "통계·예산·법령 MCP",
   "sub": "브리핑",
   "line": "의원 질의, 과별로 정리했어요",
@@ -680,11 +706,12 @@
    "level": "중",
    "period": "3~4주",
    "form": "AI 스킬"
-  }
+  },
+  "area": "civ"
  },
  {
   "no": 28,
-  "cat": "civ",
+  "cat": "O",
   "orig": "국정감사 답변 검색기",
   "sub": "행정사무감사 예상질의답변 찾기",
   "line": "답변, 바로 찾아 띄워요",
@@ -705,11 +732,12 @@
    "level": "하",
    "period": "1~2주",
    "form": "브라우저만으로 작동"
-  }
+  },
+  "area": "civ"
  },
  {
   "no": 29,
-  "cat": "civ",
+  "cat": "L",
   "orig": "바로맵",
   "sub": "주소만 넣으면 지도",
   "line": "주소만 주면 지도 뚝딱!",
@@ -732,11 +760,12 @@
    "level": "하",
    "period": "1~2주",
    "form": "브라우저만으로 작동"
-  }
+  },
+  "area": "civ"
  },
  {
   "no": 30,
-  "cat": "civ",
+  "cat": "L",
   "orig": "생애주기 혜택 내비게이터",
   "sub": "나이·조건별 받을 수 있는 혜택 찾기",
   "line": "평생 받을 혜택, 길 안내해요",
@@ -757,6 +786,7 @@
    "level": "중",
    "period": "3~4주",
    "form": "브라우저만으로 작동"
-  }
+  },
+  "area": "civ"
  }
 ]
