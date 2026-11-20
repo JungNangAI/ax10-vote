@@ -260,7 +260,7 @@ $('#cards').addEventListener('scroll', () => {}, { passive: true });
 let lastFocus = null;
 function openModal(sel) { lastFocus = document.activeElement; const m = $(sel); m.classList.add('on'); m.onclick = e => { if (e.target === m) closeModal(sel); }; setTimeout(() => { const f = m.querySelector('button'); f && f.focus(); }, 30); }
 function closeModal(sel) { $(sel).classList.remove('on'); lastFocus && lastFocus.focus && lastFocus.focus(); }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') ['#mInfo', '#mReco'].forEach(s => $(s).classList.contains('on') && closeModal(s)); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') ['#mInfo', '#mReco', '#mConf'].forEach(s => $(s).classList.contains('on') && closeModal(s)); });
 // ── 후보별 중요도·의견 ──
 let notes = {}, noteT = null, noteWarned = false;
 async function saveNote(no) {
@@ -271,10 +271,13 @@ async function saveNote(no) {
   paintNotes();
 }
 function paintNotes() { $$('.card').forEach(el => { const n = notes[+el.dataset.no]; let b = el.querySelector('.nb'); if (n && (n.score || n.comment)) { if (!b) { b = document.createElement('span'); b.className = 'nb'; el.appendChild(b); } b.textContent = (n.score ? '★' + n.score : '') + (n.comment ? ' 💬' : ''); } else if (b) b.remove(); }); }
+let infoGo = null;
+document.addEventListener('keydown', e => { if (!$('#mInfo').classList.contains('on') || !infoGo || /TEXTAREA|INPUT/.test(document.activeElement.tagName)) return; if (e.key === 'ArrowRight') infoGo(1); if (e.key === 'ArrowLeft') infoGo(-1); });
 // detail sheet
 function openInfo(c) {
   const v = CAT[c.cat]; const on = picks.includes(c.no);
-  $('#infoSheet').innerHTML = `<button class="x" aria-label="닫기">✕</button><span class="tag" style="color:${v.c};border-color:${v.c}">${v.name} · ${c.no}번</span>
+  const order = $$('.card').map(el => +el.dataset.no); const oi = order.indexOf(c.no); const navOk = oi >= 0 && order.length > 1;
+  $('#infoSheet').innerHTML = `${navOk ? `<div class="inav"><button id="iPrev" ${oi === 0 ? 'disabled' : ''}>‹ 이전</button><span>${oi + 1} / ${order.length}</span><button id="iNext" ${oi === order.length - 1 ? 'disabled' : ''}>다음 ›</button></div>` : ''}<button class="x" aria-label="닫기">✕</button><span class="tag" style="color:${v.c};border-color:${v.c}">${v.name} · ${c.no}번</span>
     <h3>${esc(c.sub)}</h3><div class="meta">${esc(c.orig)} · ${esc(c.org || '')}</div>
     <div class="big"><img src="${img(c.no)}" alt=""><div class="bigsay">${esc(c.line)}</div></div>
     <div class="chips">${c.built ? '<span class="chip gold">이미 있는 도구 · 전 부서로 넓혀요</span>' : ''}<span class="chip">${c.dept === '공통' || !c.dept ? '전 직원 공통' : '함께할 부서 · ' + esc(c.dept)}</span></div>
@@ -285,7 +288,12 @@ function openInfo(c) {
       <div class="stars" role="radiogroup" aria-label="중요도">${[1, 2, 3, 4, 5].map(k => `<button data-s="${k}" role="radio" aria-label="${k}점">★</button>`).join('')}<em id="slabel"></em></div>
       <textarea id="noteTxt" maxlength="300" rows="2" placeholder="이 도구에 대한 의견을 자유롭게 남겨 주세요 (선택)"></textarea><div class="nsave" id="nsave"></div></div>
     <button class="btn ${on ? 'ghost' : ''}" id="infoPick">${on ? '고른 것에서 빼기' : '이 도구 고르기'}</button>`;
-  openModal('#mInfo'); $('#infoSheet .x').onclick = () => closeModal('#mInfo');
+  if ($('#mInfo').classList.contains('on')) { $('#infoSheet').scrollTop = 0; } else openModal('#mInfo');
+  $('#infoSheet .x').onclick = () => closeModal('#mInfo');
+  const go = d => { const t = order[oi + d]; if (t == null) return; if (noteT) { clearTimeout(noteT); noteT = null; saveNote(c.no); } buzz(5); openInfo(byNo[t]); };
+  if (navOk) { $('#iPrev').onclick = () => go(-1); $('#iNext').onclick = () => go(1); infoGo = go;
+    const big = $('#infoSheet .big'); let sx = null; big.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive: true });
+    big.addEventListener('touchend', e => { if (sx == null) return; const dx = e.changedTouches[0].clientX - sx; sx = null; if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1); }); } else infoGo = null;
   { const n = notes[c.no] || {}; const LB = ['', '별로예요', '조금 필요', '보통', '필요해요', '꼭 필요해요'];
     const paint = s => { $$('#infoSheet .stars button').forEach(b => b.classList.toggle('on', +b.dataset.s <= (s || 0))); $('#slabel').textContent = s ? LB[s] : ''; };
     paint(n.score); $('#noteTxt').value = n.comment || '';
@@ -317,7 +325,18 @@ $('#bReco').onclick = () => {
 };
 
 // ───────── submit: transmission sequence ─────────
-$('#bGo').onclick = async () => {
+$('#bGo').onclick = () => { if (picks.length) openConfirm(); };
+function openConfirm() {
+  const left = MAX - picks.length;
+  $('#confSheet').innerHTML = `<button class="x" aria-label="닫기">✕</button><h3>이대로 보낼까요?</h3><div class="meta">내가 고른 AI 업무도구 <b style="color:#fff">${picks.length}개</b>${left > 0 ? ` · 아직 ${left}개 더 고를 수 있어요 (그대로 보내도 돼요)` : ''}</div>
+    <div class="clist">${picks.map((n, i) => { const c = byNo[n]; return `<div class="crow" style="--c:${CAT[c.cat].c}"><i>${i + 1}</i><img src="${img(n)}" alt=""><div><b>${esc(c.sub)}</b><span>${esc(CAT[c.cat].name)} · ${esc(c.orig)}</span></div><button data-rm="${n}" aria-label="${esc(c.sub)} 빼기">빼기</button></div>`; }).join('')}</div>
+    <p class="cnote">마감(${fmtDate(info.closes_at).replace('~ ', '')}) 전까지는 다시 들어와 고칠 수 있어요.</p>
+    <div class="cbtns"><button class="btn ghost" id="confMore">더 고르기</button><button class="btn" id="confSend">이대로 보내기 ✓</button></div>`;
+  openModal('#mConf'); $('#confSheet .x').onclick = () => closeModal('#mConf'); $('#confMore').onclick = () => closeModal('#mConf');
+  $$('#confSheet [data-rm]').forEach(b => b.onclick = () => { const n = +b.dataset.rm; toggle(n, document.querySelector(`.card[data-no="${n}"]`)); if (picks.length) openConfirm(); else { closeModal('#mConf'); toast('모두 뺐어요. 다시 골라 주세요'); } });
+  $('#confSend').onclick = () => { closeModal('#mConf'); doSubmit(); };
+}
+async function doSubmit() {
   if (!picks.length) return;
   const ov = $('#ovSend'), orb = $('#orbit'), beam = $('#beam'); $$('#orbit img:not(.orbitlogo)').forEach(x => x.remove()); beam.classList.remove('go');
   let skip = false; $('#skipSend').onclick = () => { skip = true; };
