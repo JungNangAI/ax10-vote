@@ -15,7 +15,7 @@ const TAGS = { 1: 'hwp me', 2: 'hwp team', 3: 'me talk', 4: 'excel team', 5: 'hw
 
 // ───────── effects: vibration / sound / motion ─────────
 const fx = Object.assign({ vib: true, snd: false, motion: !matchMedia('(prefers-reduced-motion: reduce)').matches }, store.get('fx', {}));
-function paintFx() { $$('#fx [data-k]').forEach(b => b.classList.toggle('on', !!fx[b.dataset.k])); }
+function paintFx() { $$('#fx [data-k]').forEach(b => b.classList.toggle('on', !!fx[b.dataset.k])); document.body.classList.toggle('nomo', !fx.motion); }
 $('#gear').onclick = () => $('#fx').classList.toggle('open');
 document.addEventListener('click', e => { if (!e.target.closest('#fx')) $('#fx').classList.remove('open'); });
 $$('#fx [data-k]').forEach(b => b.onclick = () => { fx[b.dataset.k] = !fx[b.dataset.k]; store.set('fx', fx); paintFx(); if (b.dataset.k === 'vib' && fx.vib) buzz(20); if (b.dataset.k === 'snd' && fx.snd) blip(880, .08); });
@@ -167,6 +167,7 @@ function renderCards() {
   });
   if (!shown) box.innerHTML = '<div class="empty">찾는 후보가 없어요. 다른 낱말로 검색해 보세요.</div>';
   paintSel(); buildRail();
+  if (visIO) { visIO.disconnect(); $$('.card').forEach(el => visIO.observe(el)); } else $$('.card').forEach(el => el.classList.add('vis'));
 }
 $('#bView').onclick = () => { view = view === 'grid' ? 'list' : 'grid'; store.set('view', view); renderCards(); buzz(8); toast(view === 'grid' ? '한눈에 보기: 30종을 작게 모아 봐요. 꾹 누르면 자세히!' : '자세히 보기로 바꿨어요'); };
 // ── right rail: where am I (17/30), categories, my picks; drag to jump ──
@@ -187,9 +188,13 @@ function updateRail(flash) {
   bub.innerHTML = `${idx + 1}/${cs.length}<small>${esc(byNo[no].sub)}</small>`;
   if (flash) { rail.classList.add('show'); clearTimeout(railT); railT = setTimeout(() => rail.classList.remove('show'), 1100); }
 }
-let lastY = 0;
-window.addEventListener('scroll', () => { if (!$('#sVote').classList.contains('on')) return; updateRail(true);
-  const y = window.scrollY; $('#top').classList.toggle('compact', y > lastY + 4 && y > 220 && !$('#find').value); if (y < lastY - 4) $('#top').classList.remove('compact'); lastY = y; }, { passive: true });
+// 스크롤: 머리말 높이는 바꾸지 않음(깜빡임 원인), 계산은 한 프레임에 한 번, 스크롤 중엔 빛 애니메이션 멈춤
+let scT, scRaf = 0;
+window.addEventListener('scroll', () => { if (!$('#sVote').classList.contains('on')) return;
+  document.body.classList.add('scrolling'); clearTimeout(scT); scT = setTimeout(() => document.body.classList.remove('scrolling'), 180);
+  if (!scRaf) scRaf = requestAnimationFrame(() => { scRaf = 0; updateRail(true); }); }, { passive: true });
+// 화면에 보이는 카드만 빛이 흐르게
+const visIO = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle('vis', e.isIntersecting)), { rootMargin: '60px 0px' }) : null;
 (() => { const rail = $('#rail'); let drag = false;
   const go = e => { const r = rail.getBoundingClientRect(); const cy = (e.touches ? e.touches[0].clientY : e.clientY); const f = Math.min(1, Math.max(0, (cy - r.top) / r.height));
     const cs = $$('.card'); if (!cs.length) return; const el = cs[Math.round(f * (cs.length - 1))]; const topH = $('#top').getBoundingClientRect().height + 8;
@@ -198,8 +203,8 @@ window.addEventListener('scroll', () => { if (!$('#sVote').classList.contains('o
   rail.addEventListener('pointermove', e => { if (drag) go(e); });
   const end = () => { drag = false; rail.classList.remove('drag'); }; rail.addEventListener('pointerup', end); rail.addEventListener('pointercancel', end); })();
 function cardEl(c, col) {
-  const b = document.createElement('div'); b.className = 'card'; b.dataset.no = c.no; b.style.setProperty('--c', col);
-  b.innerHTML = `<input type="checkbox" class="sr" aria-label="${esc(c.no + '번 ' + c.sub)} 고르기"><img class="ch" src="${img(c.no)}" alt="" loading="lazy"><div><div class="t">${esc(c.sub)}</div><div class="say">${esc(c.line)}</div><span class="o">${esc(c.orig)}${c.built ? ' <i class="built">이미 있음 · 확대 보급</i>' : ''}</span></div><div class="ck">✓</div><button class="info" aria-label="자세히">자세히 ⓘ</button>`;
+  const b = document.createElement('div'); b.className = 'card'; b.dataset.no = c.no; b.style.setProperty('--c', col); b.style.setProperty('--d', (-(c.no * 0.37) % 2.2).toFixed(2) + 's');
+  b.innerHTML = `<input type="checkbox" class="sr" aria-label="${esc(c.no + '번 ' + c.sub)} 고르기"><img class="ch" src="${img(c.no)}" alt="" loading="lazy"><div><div class="t">${esc(c.sub)}</div><div class="say">${esc(c.line)}</div><span class="o">${esc(c.orig)}${c.built ? ' <i class="built">이미 있음 · 확대 보급</i>' : ''}</span></div><div class="ck">✓</div><button class="info" aria-label="${esc(c.sub)} 자세히 보기"><i>i</i>자세히</button>`;
   b.removeAttribute('role'); b.removeAttribute('tabindex');
   const cb = b.querySelector('.sr');
   b.onclick = e => { if (e.target.closest('.info')) { e.stopPropagation(); openInfo(c); return; } if (e.target === cb) return; toggle(c.no, b); };

@@ -218,3 +218,34 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .core .n{font-size:13px}.core .n b{font-size:15px}
 .core .go{padding:11px 12px;font-size:14px}
 @media (max-width:440px){.cat em{display:none}.cat h3{font-size:17px}}
+/* ── 자세히 버튼: 분야 색 DRL 빛이 테두리를 따라 흐름 ── */
+@property --b{syntax:'<angle>';inherits:false;initial-value:0deg}
+@keyframes drl2{to{--b:360deg}}
+@keyframes infoGlow{0%,100%{box-shadow:0 0 0 0 transparent}50%{box-shadow:0 0 14px -2px var(--c)}}
+.card{padding-bottom:48px}
+.card .info{right:12px;bottom:10px;z-index:2;display:inline-flex;align-items:center;gap:5px;font-size:14px;font-weight:900;letter-spacing:-.2px;color:#fff;padding:7px 14px 7px 12px;border-radius:999px;isolation:isolate;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--c) 38%,#061328),color-mix(in srgb,var(--c) 14%,#061328));animation:infoGlow 2.4s ease-in-out infinite;animation-delay:var(--d,0s)}
+.card .info:before{content:'';position:absolute;inset:0;border-radius:inherit;padding:2px;z-index:-1;
+  background:conic-gradient(from var(--b),color-mix(in srgb,var(--c) 30%,transparent) 0 40%,var(--c) 58%,#fff 64%,var(--c) 70%,color-mix(in srgb,var(--c) 30%,transparent) 88%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:drl2 2.2s linear infinite;animation-delay:var(--d,0s)}
+.card .info i{font-style:normal;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--c);color:#02101f;font-size:12px;font-weight:900}
+.card .info:hover,.card .info:focus-visible{transform:translateY(-1px);filter:brightness(1.15)}
+.card .info:active{transform:scale(.94)}
+/* 한눈에 보기: 칸 아래에 작은 자세히 */
+#cards.grid .card{padding-bottom:42px}
+#cards.grid .card .info{display:inline-flex;left:50%;right:auto;bottom:7px;transform:translateX(-50%);font-size:12px;padding:5px 10px 5px 8px;white-space:nowrap}
+#cards.grid .card .info i{width:15px;height:15px;font-size:10px}
+#cards.grid .card .info:active{transform:translateX(-50%) scale(.94)}
+body.nomo .card .info,body.nomo .card .info:before{animation:none}
+@media (prefers-reduced-motion:reduce){.card .info,.card .info:before{animation:none}}
+/* ── 깜빡임 줄이기: 안 보이는 카드·스크롤 중에는 애니메이션 멈춤, 무거운 흐림 효과 제거 ── */
+.card:before{animation:none}
+.card{contain:paint}
+.card .info,.card .info:before,.card.sel:before{animation-play-state:paused}
+.card.vis .info,.card.vis .info:before,.card.vis.sel:before{animation-play-state:running}
+body.scrolling .card .info,body.scrolling .card .info:before,body.scrolling .card.sel:before{animation-play-state:paused}
+.card .info{animation-name:none;box-shadow:0 0 12px -4px var(--c)}
+.core{backdrop-filter:none;background:rgba(3,14,32,.97)}
+.modal{backdrop-filter:none;background:rgba(0,4,12,.8)}
+.top.compact .srow{display:flex}
+.rail,.rbub{transition:opacity .25s}
