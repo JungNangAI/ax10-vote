@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AX10 선정위원 투표 · AI파트너스</title>
+<meta name="description" content="AI파트너스가 행정AX 우수사례 30종 중 꼭 필요한 AI 업무도구를 최대 7개 고르는 투표예요.">
+<meta name="theme-color" content="#020a18">
+<meta property="og:type" content="website"><meta property="og:title" content="AX10 선정위원 투표 · AI파트너스">
+<meta property="og:description" content="꼭 필요한 AI 업무도구를 최대 7개 골라 주세요 · 3분이면 끝나요">
+<!-- ▼ 카톡 미리보기 그림: 사이트 주소가 다르면 아래 주소를 바꿔 주세요 -->
+<meta property="og:image" content="https://jungnangai.github.io/ax10-vote/assets/og.png">
+<link rel="icon" href="assets/favicon.png"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css?v=20261120f">
+</head><body>
+<div class="fx" id="fx"><button class="gear" id="gear" aria-label="효과 설정">⚙</button><div class="fxm"><button data-k="vib">진동</button><button data-k="snd">소리</button><button data-k="motion">효과</button></div></div>
+<div class="toast" id="toast"></div>
+<label class="ios-hap" aria-hidden="true"><input type="checkbox" switch id="hap"></label>
+
+<div class="wrap">
+  <!-- ① 표지 -->
+  <section class="screen cover on" id="sCover">
+    <div class="brand"><img src="assets/logo-sm.png" alt="AI파트너스 로고"><div><b>AI파트너스</b><span class="mono">JUNGNANG AI PARTNERS · VOTE</span></div></div>
+    <div class="stage" id="stage"><div class="bubble3d" id="bubble"></div></div>
+    <div class="title">AX30 → 20</div>
+    <div class="sub">AI파트너스가 <b>20종</b>을 고릅니다</div>
+    <div class="ro">
+      <div class="gold"><small>투표 기간</small><strong id="period">~ 11. 23.(월) 18시</strong></div>
+      <div><small>선택</small><strong>1인 최대 <span id="maxTxt">7</span>개</strong></div>
+      <div><small>후보</small><strong>30종 · 4개 분야</strong></div>
+      <div class="gold"><small>나의 역할</small><strong>AX10 선정위원</strong></div>
+    </div>
+    <ol class="guide"><li><b>1</b>이름 찾기</li><li><b>2</b>최대 7개 고르기</li><li><b>3</b>제출하면 끝</li></ol>
+    <div class="count" id="count" aria-live="polite"></div>
+    <button class="btn" id="bStart">투표 시작</button>
+    <button class="btn ghost" id="bResume" style="display:none;margin-top:10px"></button>
+    <button class="btn ghost" id="bResults" style="display:none;margin-top:10px">결과 보기</button>
+    <p class="privacy">투표에는 부서·이름·고른 번호·시각만 저장되며, 결과 정리 후 삭제돼요.<br>문의 기획예산과 중랑AI혁신팀 ☎ 2837</p>
+    <div id="demoTag"></div>
+  </section>
+
+  <!-- ② 본인 확인 -->
+  <section class="screen" id="sWho">
+    <h2 class="h2">선정위원님, 누구세요?<small>이름 두 글자만 치면 찾아 드려요</small></h2>
+    <input class="field" id="q" placeholder="이름 검색 (예: 길동)" autocomplete="off">
+    <div class="list" id="hits"></div>
+    <div class="or">또는 부서에서 찾기</div>
+    <select class="field" id="dept"><option value="">부서를 골라 주세요</option></select>
+    <div class="names" id="names"></div>
+    <button class="btn ghost" id="bBack1" style="margin-top:26px">처음으로</button>
+  </section>
+
+  <!-- ③ 투표 -->
+  <section class="screen" id="sVote">
+    <div class="top" id="top">
+      <div class="hi" id="hi"></div>
+      <div class="trow"><div class="tabs" id="tabs"></div><button class="viewbtn" id="bView" aria-label="보기 바꾸기"></button></div>
+      <div class="srow" id="srow"><input class="field" id="find" placeholder="후보 검색 (민원, 엑셀…)" autocomplete="off"><button class="reco-btn" id="bReco">추천<br>받기</button></div>
+    </div>
+    <p class="intro" id="intro"></p>
+    <div id="cards"></div>
+  </section>
+
+  <!-- ④ 완료 -->
+  <section class="screen done" id="sDone">
+    <div class="brand sm"><img src="assets/logo-sm.png" alt="AI파트너스 로고"><div><b>AI파트너스</b><span class="mono">TRANSMISSION COMPLETE</span></div></div>
+    <div class="stage" id="doneStage"></div>
+    <div class="title" style="font-size:40px">투표 완료!</div>
+    <div class="sub" id="doneMsg"></div>
+    <div class="badges"><span class="badge"><img src="assets/logo-sm.png" alt="" class="blogo">AI파트너스 · AX10 선정위원</span><span class="badge cy">◆ 2차 투표 홍보대사</span></div>
+    <div class="typebox" id="typeBox"></div>
+    <img class="cardimg" id="cardImg" alt="나의 선정 카드">
+    <div class="row2"><a class="btn gold" id="bSave" download="AX10_나의선정카드.png" style="text-align:center;text-decoration:none;font-size:16px;padding:14px">카드 저장</a><button class="btn ghost" id="bEdit">다시 고치기</button></div>
+    <button class="btn" id="bShare" style="display:none;margin-top:10px">카톡·문자로 자랑하기</button>
+    <p style="font-size:12px;color:var(--mut);margin-top:6px">저장이 안 되면 카드 이미지를 길게 눌러 저장해 주세요.</p>
+    <h3 style="margin-top:22px;font-size:17px">가장 기대되는 도구에 한마디 <small style="color:var(--mut);font-weight:500">(선택)</small></h3>
+    <div class="say1"><input class="field" id="cmt" maxlength="200" placeholder="이 도구, 이렇게 쓰고 싶어요"><button id="bCmt">남기기</button></div>
+    <button class="btn ghost" id="bResults2" style="display:none">결과 보기</button>
+  </section>
+
+  <!-- ⑤ 결과 -->
+  <section class="screen res" id="sRes">
+    <div class="brand sm"><img src="assets/logo-sm.png" alt="AI파트너스 로고"><div><b>AI파트너스</b><span class="mono">AX30 → 20 · RESULT</span></div></div>
+    <h2 class="h2">AI파트너스가 고른 20종</h2>
+    <div id="resList"></div>
+    <button class="btn ghost" id="bBack2" style="margin-top:20px">처음으로</button>
+  </section>
+</div>
+
+<div class="rail" id="rail" aria-hidden="true"><div class="rtrack" id="rtrack"></div><div class="rbub" id="rbub">1/30</div></div>
+<div class="core" id="core" style="display:none"><div class="slots" id="slots"></div><div class="n" id="ncount" aria-live="polite"><b>0</b>/7</div><button class="go" id="bGo" disabled>제출</button></div>
+
+<div class="modal" id="mInfo"><div class="sheet" id="infoSheet"></div></div>
+<div class="modal" id="mReco"><div class="sheet" id="recoSheet"></div></div>
+
+<div class="ov" id="ovBoot"><div class="rings"><i></i><i></i><i></i><i></i><b><img src="assets/logo-sm.png" alt="" class="ringlogo"></b></div><div class="boot-lines mono" id="bootLines"></div><div class="boot-hello" id="bootHello"></div><button class="skip" id="skipBoot">건너뛰기</button></div>
+<div class="ov" id="ovSend"><div class="orbit" id="orbit"><div class="beam" id="beam"></div><img src="assets/logo-sm.png" alt="" class="orbitlogo"></div><div class="tx" id="sendTx">선택한 도구를 전송하는 중…</div><button class="skip" id="skipSend">건너뛰기</button></div>
+
+<script src="assets/config.js?v=20261120f"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/app.js?v=20261120f"></script>
+</body></html>
