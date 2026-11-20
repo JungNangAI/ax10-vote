@@ -173,5 +173,7 @@ $('#bReport').onclick = () => { if (!ov) return; const r = buildReport(); $('#pa
   $('#rData').onclick = () => copyText(JSON.stringify(r.data, null, 1), '데이터를 복사했어요. Claude에게 붙여 넣으면 한글 파일로 만들어 드려요');
   $('#rPrint').onclick = () => { try { window.print(); } catch (e) { toast('이 화면에서는 인쇄가 막혀 있어요. 실제 사이트에서 눌러 주세요'); } };
   $('#rClose').onclick = () => $('#rep').classList.remove('on'); };
+document.body.dataset.mt = 'now';
+document.querySelectorAll('#mtabs [data-mt]').forEach(b => b.onclick = () => { document.body.dataset.mt = b.dataset.mt; document.querySelectorAll('#mtabs [data-mt]').forEach(x => x.classList.toggle('on', x === b)); scrollTo(0, 0); });
 fetch('assets/candidates.json?v=20261120q').then(r => r.json()).then(c => { cands = c; if (KEY) load(); }).catch(() => {});
 })();

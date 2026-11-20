@@ -75,6 +75,35 @@ tr.cutline td{border-bottom:3px dashed var(--gd)}
 .rm i{font-style:normal;color:var(--cy);font-weight:900}
 .rm .sbtn{padding:3px 8px;font-size:12px;border-radius:8px}
 @media print{body{background:#fff}.wrap,.toast,.rep .bar2{display:none!important}.rep{position:static;background:#fff;padding:0;display:block}.paper{padding:0;max-width:none}}
+
+/* ── 관리자 휴대폰 화면: 위쪽 탭으로 한 부분씩 ── */
+.mtabs{display:none}
+@media (max-width:700px){
+  .wrap{padding:14px 12px 40px}
+  header{gap:8px;margin-bottom:10px;flex-wrap:wrap}
+  header img{width:36px;height:36px}
+  header h1{font-size:18px}header p{display:none}
+  header .sbtn{padding:7px 10px;font-size:13px}
+  .mtabs{display:flex;gap:6px;position:sticky;top:0;z-index:30;margin:0 -12px 12px;padding:8px 12px;background:rgba(3,11,26,.97);border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+  .mtabs::-webkit-scrollbar{display:none}
+  .mtabs button{flex:1 0 auto;font:inherit;font-size:14px;font-weight:800;color:var(--mut);background:transparent;border:1.5px solid var(--line);border-radius:999px;padding:7px 12px;cursor:pointer}
+  .mtabs button.on{background:var(--cy);color:#02101f;border-color:var(--cy)}
+  body:not([data-mt=now]) [data-t=now],body:not([data-mt=tally]) [data-t=tally],body:not([data-mt=roster]) [data-t=roster],body:not([data-mt=set]) [data-t=set]{display:none!important}
+  .grid{gap:0}
+  .box{padding:14px;border-radius:16px;margin-bottom:12px}
+  .kpis{gap:8px}.kpi{padding:10px}.kpi b{font-size:24px}
+  .list{font-size:13.5px;line-height:1.8}
+  table{font-size:13px}th,td{padding:6px 4px}
+  .rdept{display:block}.rdept>b{display:block;margin-bottom:4px}
+  .rm{margin:0 4px 4px 0}
+  .row input,.row select{flex:1 1 140px;min-width:0}
+  .row label{display:flex;align-items:center;gap:6px;flex:1 1 100%}
+  #xls{flex-basis:100%}
+  .row .sbtn{flex:1 1 auto}
+  textarea{font-size:13px}
+  .paper{padding:22px 16px}
+  .rep .bar2 .sbtn{flex:1 1 40%}
+}
 </style>
 </head>
 <body>
@@ -99,36 +128,37 @@ tr.cutline td{border-bottom:3px dashed var(--gd)}
       <button class="sbtn gold" id="bReport">결과보고서</button>
     </header>
 
-    <div class="kpis">
+    <nav class="mtabs" id="mtabs"><button data-mt="now" class="on">참여</button><button data-mt="tally">득표·의견</button><button data-mt="roster">명단</button><button data-mt="set">기간·설정</button></nav>
+    <div data-t="now" class="kpis">
       <div class="kpi"><b id="kV">0</b><span>투표한 사람</span></div>
       <div class="kpi"><b id="kT">0</b><span>전체 선정위원</span></div>
       <div class="kpi"><b id="kP">0%</b><span>참여율</span></div>
       <div class="kpi"><b id="kD">-</b><span>마감까지</span></div>
     </div>
 
-    <div class="box"><h2>참여 좌석</h2><div class="hint">불 켜진 칸이 투표한 사람이에요. 칸에 마우스를 올리면 이름이 보여요.</div><div class="seats" id="seats"></div></div>
+    <div data-t="now" class="box"><h2>참여 좌석</h2><div class="hint">불 켜진 칸이 투표한 사람이에요. 칸에 마우스를 올리면 이름이 보여요.</div><div class="seats" id="seats"></div></div>
 
     <div class="grid">
-      <div class="box"><h2>아직 안 한 사람</h2><div class="list" id="notYet"></div>
+      <div data-t="now" class="box"><h2>아직 안 한 사람</h2><div class="list" id="notYet"></div>
         <h2 style="margin-top:14px">독려 문구</h2><textarea id="nudge"></textarea>
         <div class="row" style="margin-top:8px"><button class="sbtn" id="bCopy">문구 복사</button></div></div>
-      <div class="box"><h2>투표한 사람</h2><div class="hint">시험 표나 잘못된 표는 '초기화'를 두 번 눌러 지워요. 그 사람은 다시 투표할 수 있어요.</div><div class="list" id="voted"></div>
+      <div data-t="now" class="box"><h2>투표한 사람</h2><div class="hint">시험 표나 잘못된 표는 '초기화'를 두 번 눌러 지워요. 그 사람은 다시 투표할 수 있어요.</div><div class="list" id="voted"></div>
         <h2 style="margin-top:14px">같은 휴대폰으로 여러 명</h2><div class="list" id="dup"></div></div>
     </div>
 
     <div class="grid">
-      <div class="box"><h2>득표 현황</h2><div class="hint">노란 점선 아래가 21위부터예요. 20위 동점은 혁신팀이 정해요.</div><table id="tally"></table>
+      <div data-t="tally" class="box"><h2>득표 현황</h2><div class="hint">노란 점선 아래가 21위부터예요. 20위 동점은 혁신팀이 정해요.</div><table id="tally"></table>
         <div class="row" style="margin-top:10px"><button class="sbtn ghost" id="bCsv">엑셀용 CSV 복사</button></div></div>
       <div>
-        <div class="box"><h2>투표 기간·공개</h2>
+        <div data-t="set" class="box"><h2>투표 기간·공개</h2>
           <div class="row"><input type="datetime-local" id="closes"><button class="sbtn ghost" id="bCloses">마감 시각 바꾸기</button></div>
           <div class="row" style="margin-top:10px"><button class="sbtn ghost" id="bCloseNow">지금 마감</button><button class="sbtn ghost" id="bPub">비공개 · 누르면 공개</button></div>
           <div class="hint" style="margin-top:10px">공개하면 투표 사이트에서 모두가 결과 포스터(순위·비율, 표 수와 이름은 비공개)를 볼 수 있어요.</div></div>
-        <div class="box"><h2>한 줄 의견</h2><div class="list" id="cmts"></div></div>
+        <div data-t="tally" class="box"><h2>한 줄 의견</h2><div class="list" id="cmts"></div></div>
       </div>
     </div>
 
-    <div class="box" id="rosterBox"><h2>명단 관리 · <span id="rosterN">0</span>명</h2>
+    <div data-t="roster" class="box" id="rosterBox"><h2>명단 관리 · <span id="rosterN">0</span>명</h2>
       <div class="hint">한 명씩 더하거나 빼요. 투표한 사람(✓)을 빼면 그 표도 함께 지워져요.</div>
       <div class="row"><input id="aDept" list="deptList" placeholder="부서 (예: 기획예산과)" size="16"><datalist id="deptList"></datalist><input id="aName" placeholder="이름" size="8"><button class="sbtn" id="bAdd">한 명 더하기</button></div>
       <div id="roster" class="roster"></div>
@@ -138,7 +168,7 @@ tr.cutline td{border-bottom:3px dashed var(--gd)}
       <div class="list" id="upPrev" style="margin-top:8px;font-size:13px"></div>
     </div>
 
-    <div class="box"><h2>2차 투표 만들기 (1차가 끝난 뒤)</h2><div class="hint">1차 상위 후보로 전 직원 투표 회차를 새로 만들어요. 만든 뒤 config.js의 round 값을 새 회차 이름으로 바꾸면 사이트가 2차로 바뀌어요.</div>
+    <div data-t="set" class="box"><h2>2차 투표 만들기 (1차가 끝난 뒤)</h2><div class="hint">1차 상위 후보로 전 직원 투표 회차를 새로 만들어요. 만든 뒤 config.js의 round 값을 새 회차 이름으로 바꾸면 사이트가 2차로 바뀌어요.</div>
       <div class="row">
         <label>회차 이름 <input id="pNew" value="ax20-2" size="8"></label>
         <label>상위 <input id="pTop" type="number" value="20" style="width:70px">종</label>
@@ -161,8 +191,8 @@ tr.cutline td{border-bottom:3px dashed var(--gd)}
   <textarea id="rText"></textarea>
 </div>
 
-<script src="assets/config.js?v=20261120q"></script>
+<script src="assets/config.js?v=20261120r"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="assets/admin.js?v=20261120q"></script>
+<script src="assets/admin.js?v=20261120r"></script>
 </body>
 </html>
