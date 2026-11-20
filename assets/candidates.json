@@ -168,7 +168,7 @@
    "직원 요청 기능을 계속 추가"
   ],
   "dept": "공통",
-  "built": true,
+  "built": false,
   "links": [
    "https://fake.choshg.com/",
    "https://gitlab.aigov.go.kr/cathode/pdf-dokkaebi-bangmang-i"
@@ -402,7 +402,7 @@
    "전입·신규자 교육 자료로도 활용"
   ],
   "dept": "행정지원과",
-  "built": true,
+  "built": false,
   "links": [
    "https://hskb.netlify.app",
    "https://works.ggc.go.kr/kb/"
@@ -577,7 +577,7 @@
    "만족도조사와 결과보고서 작성까지 한 흐름으로 확장"
   ],
   "dept": "공통",
-  "built": true,
+  "built": false,
   "links": [
    "https://jungnangai.github.io/edu-attendance/",
    "https://gitlab.aigov.go.kr/gslee0819/townhall-kit"
@@ -650,7 +650,7 @@
    "특보 상황보고 기능 추가 예정"
   ],
   "dept": "행정지원과 (전 직원)",
-  "built": true,
+  "built": false,
   "links": [],
   "feas": null
  },

@@ -286,3 +286,16 @@ body.scrolling .card .info,body.scrolling .card .info:before,body.scrolling .car
 @keyframes bgsweep{to{transform:translateX(433%)}}
 body.nomo #bgfx .sweep{display:none}
 @media (prefers-reduced-motion:reduce){#bgfx .sweep{display:none}}
+/* ── 아래 막대: 고른 도구 이름 띠 ── */
+.core{flex-wrap:wrap;row-gap:8px}
+.pk{display:none;flex-basis:100%;order:-1;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0 0;-webkit-mask:linear-gradient(90deg,#000 92%,transparent);mask:linear-gradient(90deg,#000 92%,transparent)}
+.pk::-webkit-scrollbar{display:none}
+.core.has .pk{display:flex}
+.pkc{flex:none;display:inline-flex;align-items:center;gap:4px;max-width:168px;padding:3px 4px 3px 3px;border-radius:999px;background:color-mix(in srgb,var(--c) 20%,#061328);border:1.5px solid color-mix(in srgb,var(--c) 70%,transparent);animation:pkin .3s ease}
+@keyframes pkin{from{transform:scale(.6);opacity:0}}
+.pkc img{width:22px;height:22px;border-radius:50%;background:#fff;object-fit:cover;object-position:50% 20%;flex:none}
+.pkc b{font-size:12.5px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.pkc button{flex:none;width:20px;height:20px;border-radius:50%;font-size:11px;color:#cfe;background:rgba(0,0,0,.35);line-height:20px;padding:0}
+.pkc button:hover{background:#ff5d7a;color:#fff}
+.slot.on{background-color:#fff;background-size:cover;background-position:50% 18%;background-repeat:no-repeat}
+@media (min-width:900px) and (hover:hover){.pk{flex-wrap:wrap;overflow:visible;-webkit-mask:none;mask:none}.pkc{max-width:220px}.pkc b{font-size:13px}}

@@ -241,7 +241,14 @@ function spark(el, toCore) {
 }
 function renderCore() {
   const s = $('#slots'); s.innerHTML = '';
-  for (let i = 0; i < MAX; i++) { const d = document.createElement('div'); d.className = 'slot'; const n = picks[i]; if (n) { d.classList.add('on'); d.style.setProperty('--c', CAT[byNo[n].cat].c); d.title = byNo[n].sub + ' (누르면 빼기)'; d.setAttribute('role', 'button'); d.setAttribute('aria-label', byNo[n].sub + ' 빼기'); d.onclick = () => toggle(n, document.querySelector(`.card[data-no="${n}"]`)); } s.appendChild(d); }
+  for (let i = 0; i < MAX; i++) { const d = document.createElement('div'); d.className = 'slot'; const n = picks[i]; if (n) { d.classList.add('on'); d.style.setProperty('--c', CAT[byNo[n].cat].c); d.style.backgroundImage = `url(${img(n)})`; d.title = byNo[n].sub + ' (누르면 빼기)'; d.setAttribute('role', 'button'); d.setAttribute('aria-label', byNo[n].sub + ' 빼기'); d.onclick = () => toggle(n, document.querySelector(`.card[data-no="${n}"]`)); } s.appendChild(d); }
+  // 고른 도구 이름 띠: 짧게 보여 주고, ✕로 빼기 · 이름 누르면 자세히
+  let pk = $('#pk'); if (!pk) { pk = document.createElement('div'); pk.id = 'pk'; pk.className = 'pk'; $('#core').prepend(pk); }
+  pk.innerHTML = picks.map(n => { const c = byNo[n]; return `<span class="pkc" style="--c:${CAT[c.cat].c}"><img src="${img(n)}" alt=""><b data-open="${n}" title="${esc(c.sub)}">${esc(c.sub)}</b><button data-x="${n}" aria-label="${esc(c.sub)} 빼기">✕</button></span>`; }).join('');
+  $('#core').classList.toggle('has', picks.length > 0);
+  pk.querySelectorAll('[data-x]').forEach(b => b.onclick = e => { e.stopPropagation(); const n = +b.dataset.x; toggle(n, document.querySelector(`.card[data-no="${n}"]`)); });
+  pk.querySelectorAll('[data-open]').forEach(b => b.onclick = () => openInfo(byNo[+b.dataset.open]));
+  if (picks.length) pk.scrollLeft = pk.scrollWidth;
   $('#ncount').innerHTML = `<b>${picks.length}</b>/${MAX}`; $('#bGo').disabled = !picks.length; $('#core').classList.toggle('full', picks.length >= MAX);
 }
 $('#find').addEventListener('input', () => renderCards());
@@ -436,7 +443,7 @@ $('#bStart').onclick = () => { buzz(10); blip(600); show('sWho'); setTimeout(() 
   $('#bStart').disabled = true; $('#count').textContent = '투표 정보를 불러오는 중…';
   if (DEMO) $('#demoTag').innerHTML = '<span class="demo">미리보기 모드 · 예시 명단(김하늘, 이바다 등)으로 시험해 보세요</span>';
   try {
-    const cj = await fetch('assets/candidates.json').then(r => r.json()).catch(() => null);
+    const cj = await fetch('assets/candidates.json?v=20261120q').then(r => r.json()).catch(() => null);
     if (DEMO) Demo.setCands(cj || []);
     info = await rpc('ax_round_info', { p_round: ROUND });
     cands = (DEMO ? cj : await rpc('ax_candidates', { p_round: ROUND })) || [];
