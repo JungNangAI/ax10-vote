@@ -40,6 +40,8 @@ const Demo = (() => {
     ax_search_member: ({ p_q }) => db.members.filter(m => p_q.trim().length >= 2 && m.name.includes(p_q.trim())).slice(0, 10),
     ax_depts: () => [...new Set(db.members.map(m => m.dept))].sort().map(dept => ({ dept })),
     ax_members_by_dept: ({ p_dept }) => db.members.filter(m => m.dept === p_dept),
+    ax_note_save: ({ p_member, p_no, p_score, p_comment }) => { db.notes = db.notes || {}; const m = db.notes[p_member] = db.notes[p_member] || {}; if (!p_score && !(p_comment || '').trim()) delete m[p_no]; else m[p_no] = { score: p_score || null, comment: (p_comment || '').trim() || null }; save(); return { ok: true }; },
+    ax_my_notes: ({ p_member }) => Object.entries((db.notes || {})[p_member] || {}).map(([no, v]) => ({ no: +no, ...v })),
     ax_my_vote: ({ p_member, p_device }) => { const v = db.votes[p_member]; if (!v) return null; return (!v.device || v.device === p_device) ? v : { locked: true }; },
     ax_submit: ({ p_member, p_picks, p_comment, p_device }) => { const mine = db.votes[p_member]; if (mine && mine.device && mine.device !== p_device) return { ok: false, msg: '다른 휴대폰에서 이미 투표했어요. 바꾸려면 혁신팀(☎2837)에 초기화를 요청해 주세요.' }; const other = Object.entries(db.votes).find(([k, v]) => v.device === p_device && k !== p_member);
       if (other) return { ok: false, msg: '이 휴대폰으로는 이미 다른 선정위원이 투표했어요. (미리보기에서는 다른 이름 시험 시 이 안내가 떠요)' };
@@ -113,6 +115,7 @@ $('#dept').onchange = async e => { const box = $('#names'); box.innerHTML = ''; 
 async function choose(m) {
   me = m; store.set('me', m); buzz(15); blip(740);
   let mv = await rpc('ax_my_vote', { p_round: ROUND, p_member: m.id, p_device: device }).catch(() => null);
+  notes = {}; try { const ns = await rpc('ax_my_notes', { p_round: ROUND, p_member: m.id, p_device: device }); (ns || []).forEach(n => notes[n.no] = { score: n.score, comment: n.comment || '' }); } catch (e) { try { notes = store.get('notes_' + m.id, {}) || {}; } catch (x) {} }
   if (mv && mv.locked) { toast('다른 휴대폰에서 이미 투표한 선정위원이에요. 본인 휴대폰으로 들어오거나 혁신팀(☎2837)에 초기화를 요청해 주세요.', 4200); buzz([40, 40, 40]); return; }
   picks = (mv && mv.picks) ? mv.picks.filter(n => byNo[n]).slice(0, MAX) : [];
   const draft = store.get('draft_' + m.id, null); let restored = false;
@@ -167,7 +170,7 @@ function renderCards() {
     list.forEach(c => wrap.appendChild(cardEl(c, v.c)));
   });
   if (!shown) box.innerHTML = '<div class="empty">찾는 후보가 없어요. 다른 낱말로 검색해 보세요.</div>';
-  paintSel(); buildRail();
+  paintSel(); buildRail(); paintNotes();
   if (visIO) { visIO.disconnect(); $$('.card').forEach(el => visIO.observe(el)); } else $$('.card').forEach(el => el.classList.add('vis'));
 }
 $('#bView').onclick = () => { view = view === 'grid' ? 'list' : 'grid'; store.set('view', view); renderCards(); buzz(8); toast(view === 'grid' ? '한눈에 보기: 30종을 작게 모아 봐요. 꾹 누르면 자세히!' : '자세히 보기로 바꿨어요'); };
@@ -259,6 +262,16 @@ let lastFocus = null;
 function openModal(sel) { lastFocus = document.activeElement; const m = $(sel); m.classList.add('on'); m.onclick = e => { if (e.target === m) closeModal(sel); }; setTimeout(() => { const f = m.querySelector('button'); f && f.focus(); }, 30); }
 function closeModal(sel) { $(sel).classList.remove('on'); lastFocus && lastFocus.focus && lastFocus.focus(); }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') ['#mInfo', '#mReco'].forEach(s => $(s).classList.contains('on') && closeModal(s)); });
+// ── 후보별 중요도·의견 ──
+let notes = {}, noteT = null, noteWarned = false;
+async function saveNote(no) {
+  const n = notes[no] || {}; if (me) store.set('notes_' + me.id, notes);
+  try { const r = await rpc('ax_note_save', { p_round: ROUND, p_member: me.id, p_no: no, p_score: n.score || null, p_comment: n.comment || '', p_device: device });
+    const st = $('#nsave'); if (st) st.textContent = r && r.ok ? '저장했어요 ✓' : (r && r.msg) || '저장하지 못했어요';
+  } catch (e) { const st = $('#nsave'); if (st) st.textContent = '이 휴대폰에만 저장했어요'; if (!noteWarned) { noteWarned = true; console.warn(e); } }
+  paintNotes();
+}
+function paintNotes() { $$('.card').forEach(el => { const n = notes[+el.dataset.no]; let b = el.querySelector('.nb'); if (n && (n.score || n.comment)) { if (!b) { b = document.createElement('span'); b.className = 'nb'; el.appendChild(b); } b.textContent = (n.score ? '★' + n.score : '') + (n.comment ? ' 💬' : ''); } else if (b) b.remove(); }); }
 // detail sheet
 function openInfo(c) {
   const v = CAT[c.cat]; const on = picks.includes(c.no);
@@ -269,8 +282,18 @@ function openInfo(c) {
     <p>${esc(c.descr || '')}</p>
     ${(c.detail || []).length ? `<ul class="det">${c.detail.map(d => `<li>${esc(d)}</li>`).join('')}</ul>` : ''}
     ${c.feas ? `<div class="feas"><b>만들기</b><span>난이도 ${esc(c.feas.level)}</span><span>${esc(c.feas.period)}</span><span>${esc(c.feas.form)}</span></div>` : ''}
+    <div class="rate"><b>이 도구, 우리 구에 얼마나 중요할까요?</b><span class="rs">고르지 않아도 평가할 수 있어요</span>
+      <div class="stars" role="radiogroup" aria-label="중요도">${[1, 2, 3, 4, 5].map(k => `<button data-s="${k}" role="radio" aria-label="${k}점">★</button>`).join('')}<em id="slabel"></em></div>
+      <textarea id="noteTxt" maxlength="300" rows="2" placeholder="이 도구에 대한 의견을 자유롭게 남겨 주세요 (선택)"></textarea><div class="nsave" id="nsave"></div></div>
     <button class="btn ${on ? 'ghost' : ''}" id="infoPick">${on ? '고른 것에서 빼기' : '이 도구 고르기'}</button>`;
   openModal('#mInfo'); $('#infoSheet .x').onclick = () => closeModal('#mInfo');
+  { const n = notes[c.no] || {}; const LB = ['', '별로예요', '조금 필요', '보통', '필요해요', '꼭 필요해요'];
+    const paint = s => { $$('#infoSheet .stars button').forEach(b => b.classList.toggle('on', +b.dataset.s <= (s || 0))); $('#slabel').textContent = s ? LB[s] : ''; };
+    paint(n.score); $('#noteTxt').value = n.comment || '';
+    $$('#infoSheet .stars button').forEach(b => b.onclick = () => { const cur = (notes[c.no] || {}).score; const s = cur === +b.dataset.s ? null : +b.dataset.s;
+      notes[c.no] = { ...(notes[c.no] || {}), score: s }; paint(s); buzz(8); blip(500 + (s || 0) * 80, .05); saveNote(c.no); });
+    $('#noteTxt').oninput = () => { notes[c.no] = { ...(notes[c.no] || {}), comment: $('#noteTxt').value }; $('#nsave').textContent = '입력 중…'; clearTimeout(noteT); noteT = setTimeout(() => saveNote(c.no), 900); };
+    $('#noteTxt').onblur = () => { if (noteT) { clearTimeout(noteT); noteT = null; saveNote(c.no); } }; }
   $('#infoPick').onclick = () => { closeModal('#mInfo'); toggle(c.no, document.querySelector(`.card[data-no="${c.no}"]`)); };
 }
 // recommendation questions

@@ -29,3 +29,7 @@ const del = (await q(`select id from ax_member where round_id='ax30-1' and name=
 console.log('DEL wrongkey', await q(`select ax_admin_member_del('ax30-1','틀린',$1) r`,[del]));
 console.log('DEL', await q(`select ax_admin_member_del('ax30-1','여기에-관리열쇠',$1) r`,[del]));
 console.log('after', await q(`select count(*) from ax_member where round_id='ax30-1'`), await q(`select count(*) from ax_vote where member_id=$1`,[del]));
+const mm = (await q(`select id from ax_member where round_id='ax30-1' limit 1`))[0].id;
+console.log('NOTE', await q(`select ax_note_save('ax30-1',$1,3,5,'꼭 필요','devN') r`,[mm]), await q(`select ax_note_save('ax30-1',$1,4,2,null,'devN') r`,[mm]));
+console.log('MY', JSON.stringify(await q(`select ax_my_notes('ax30-1',$1,'devN') r`,[mm])));
+console.log('ADM', JSON.stringify(await q(`select ax_admin_notes('ax30-1','여기에-관리열쇠') r`)));

@@ -304,3 +304,47 @@ body.nomo #bgfx .sweep{display:none}
 body[data-scr=sVote] .hi{padding-right:118px}
 @media (max-width:360px){.slogan{height:30px}body[data-scr=sVote] .hi{padding-right:104px}}
 @media (min-width:900px) and (hover:hover){.slogan{height:54px;top:14px;right:66px}body[data-scr=sVote] .hi{padding-right:0}}
+/* PC 배경 움직임: AI 글자 DRL + 두근거리는 뇌 */
+#bgov{position:absolute;inset:0}
+#bgov .aidrl{position:absolute;left:0;top:0;overflow:visible}
+#bgov .flow{stroke-dasharray:14 86;stroke-linecap:round;animation:aiflow 3.2s linear infinite;filter:drop-shadow(0 0 6px #4fd8ff)}
+#bgov .flow.f2{stroke-dasharray:6 94;opacity:.55;animation-duration:4.6s;animation-direction:reverse}
+@keyframes aiflow{to{stroke-dashoffset:-100}}
+#bgov .aidrl text{paint-order:stroke}
+.brainbox{position:absolute;pointer-events:none}
+.brainbox .brain{position:absolute;left:0;top:0;width:100%;height:auto;overflow:visible}
+.brainbox .beat{transform-origin:210px 160px;animation:heart 1.15s ease-in-out infinite}
+@keyframes heart{0%{transform:scale(1)}12%{transform:scale(1.045)}24%{transform:scale(.995)}36%{transform:scale(1.03)}55%,100%{transform:scale(1)}}
+.brainbox .sig{stroke-dasharray:10 90;stroke-dashoffset:100;animation:sig 2.3s linear infinite}
+@keyframes sig{0%{stroke-dashoffset:100;opacity:0}10%{opacity:1}80%{opacity:1}100%{stroke-dashoffset:0;opacity:0}}
+.brainbox .node{animation:node 1.15s ease-in-out infinite}
+@keyframes node{0%,100%{opacity:.35}15%{opacity:1}}
+.brainbox .spark{animation:spk 3s ease-in-out infinite}
+@keyframes spk{0%,100%{opacity:.15}50%{opacity:.95}}
+.brainbox .halo{position:absolute;left:10%;top:5%;width:80%;height:70%;border-radius:50%;background:radial-gradient(circle,rgba(60,180,255,.45),rgba(30,90,255,.12) 55%,transparent 70%);animation:halo 1.15s ease-in-out infinite;will-change:transform,opacity}
+@keyframes halo{0%,100%{transform:scale(.95);opacity:.55}12%{transform:scale(1.08);opacity:1}36%{transform:scale(1.04);opacity:.85}}
+.brainbox .ring{position:absolute;left:50%;bottom:2%;width:70%;height:16%;margin-left:-35%;border-radius:50%;border:2px solid rgba(90,210,255,.7);box-shadow:0 0 14px rgba(60,200,255,.6),inset 0 0 10px rgba(60,200,255,.4);animation:ring 2.3s ease-out infinite;opacity:0}
+.brainbox .ring.r2{animation-delay:.77s}.brainbox .ring.r3{animation-delay:1.53s}
+@keyframes ring{0%{transform:scale(.4);opacity:0}20%{opacity:.9}100%{transform:scale(1.35);opacity:0}}
+.brainbox .pt{position:absolute;bottom:10%;width:3px;height:3px;border-radius:50%;background:#bff4ff;box-shadow:0 0 6px #4fd8ff;animation:pt 3.4s linear infinite;opacity:0}
+@keyframes pt{0%{transform:translateY(0);opacity:0}15%{opacity:1}100%{transform:translateY(-120px);opacity:0}}
+body.nomo #bgov *{animation:none!important}
+@media (prefers-reduced-motion:reduce){#bgov *{animation:none!important}}
+/* PC 슬로건 2배 + 양옆 여백 확보 */
+@media (min-width:1280px) and (hover:hover){
+  .slogan{height:108px;top:14px;right:56px}
+  body[data-scr=sVote] .wrap,body[data-scr=sRes] .wrap{max-width:min(1120px,max(760px,calc(100vw - 520px)))}
+}
+/* 중요도·의견 */
+.sheet .rate{margin:14px 0 14px;padding:12px 14px;border-radius:16px;background:rgba(255,191,74,.08);border:1.5px solid rgba(255,191,74,.4)}
+.sheet .rate>b{display:block;font-size:15px;font-weight:900;color:#ffd27a}
+.sheet .rate .rs{font-size:12px;color:var(--mut)}
+.sheet .stars{display:flex;align-items:center;gap:4px;margin:8px 0}
+.sheet .stars button{font-size:30px;line-height:1;color:rgba(255,255,255,.22);padding:2px 3px;transition:transform .12s,color .12s}
+.sheet .stars button.on{color:#ffbf4a;text-shadow:0 0 12px rgba(255,191,74,.8)}
+.sheet .stars button:active{transform:scale(1.25)}
+.sheet .stars em{font-style:normal;font-size:14px;font-weight:800;color:#ffd27a;margin-left:8px}
+.sheet .rate textarea{width:100%;font:inherit;font-size:14px;color:var(--ink);background:#061328;border:1.5px solid rgba(34,230,255,.35);border-radius:12px;padding:9px 11px;resize:vertical;min-height:58px}
+.sheet .nsave{font-size:12px;color:var(--mut);text-align:right;min-height:16px;margin-top:3px}
+.card .nb{position:absolute;left:10px;top:8px;font-size:11.5px;font-weight:900;color:#ffbf4a;background:rgba(0,0,0,.45);border-radius:8px;padding:1px 6px;z-index:2}
+#cards.grid .card .nb{left:6px;top:6px}

@@ -45,13 +45,14 @@
     // 멀리 흐린 빛
     const fog = g.createRadialGradient(cx, hor, 10, cx, hor, W * .7); fog.addColorStop(0, 'rgba(30,120,255,.28)'); fog.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = fog; g.fillRect(0, 0, W, H);
     // 가운데(투표 내용)는 어둡게 눌러서 글자가 잘 보이게
-    const content = Math.min(1120, W - 80), gw = (W - content) / 2;
+    const content = W >= 1280 ? Math.min(1120, Math.max(760, W - 520)) : Math.min(1120, W - 80), gw = (W - content) / 2;
     const mid = g.createLinearGradient(0, 0, W, 0); const a = gw / W, b = (gw + content) / W;
     mid.addColorStop(0, 'rgba(1,6,16,0)'); mid.addColorStop(Math.max(0, a - .03), 'rgba(1,6,16,.05)'); mid.addColorStop(a + .02, 'rgba(2,9,22,.86)');
     mid.addColorStop(b - .02, 'rgba(2,9,22,.86)'); mid.addColorStop(Math.min(1, b + .03), 'rgba(1,6,16,.05)'); mid.addColorStop(1, 'rgba(1,6,16,0)');
     g.fillStyle = mid; g.fillRect(0, 0, W, H);
     // 양옆 홀로그램 AI
     if (gw > 120) [gw / 2, W - gw / 2].forEach((x, i) => holo(g, x, H * .62, Math.min(gw * .62, 190), i));
+    overlay(W, H, gw);
   }
   function holo(g, x, y, s, flip) {
     const font = `900 ${s}px "Noto Sans KR", system-ui, sans-serif`; g.font = font; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
@@ -76,6 +77,70 @@
     g.globalAlpha = .9; g.drawImage(off, x - ow / 2, y - oh * .86); g.globalAlpha = 1; g.restore();
     // 바닥 반사
     g.save(); g.translate(0, (y + s * .04) * 2); g.scale(1, -1); g.globalAlpha = .18; g.drawImage(off, x - ow / 2, y - oh * .86); g.restore(); g.globalAlpha = 1;
+  }
+
+  // ── 움직이는 층: AI 글자 테두리에 DRL 빛 흐름 + 두근거리는 인공지능 뇌 ──
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (t, at, kids) => { const e = document.createElementNS(NS, t); for (const k in at) e.setAttribute(k, at[k]); (kids || []).forEach(c => e.appendChild(c)); return e; };
+  const BRAIN = 'M70 200C40 170 40 112 80 86C94 52 138 34 174 44C200 24 250 24 276 44C312 40 350 64 356 104C382 124 382 176 356 196C350 226 320 246 290 240C274 262 240 268 214 254C186 262 150 260 128 246C100 244 72 226 70 200Z';
+  const GYRI = ['M96 120C120 104 140 116 160 100', 'M112 160C136 146 150 160 168 150', 'M250 70C266 88 290 80 304 96', 'M300 130C320 140 334 132 350 146', 'M96 196C118 186 132 200 150 192', 'M270 206C290 196 306 210 330 198', 'M190 58C200 74 222 74 232 60', 'M330 170C342 180 352 176 362 182'];
+  function brainSVG(id) {
+    const s = el('svg', { viewBox: '0 0 420 340', class: 'brain' });
+    const d = el('defs');
+    const gr = el('radialGradient', { id: id + 'f', cx: '50%', cy: '45%', r: '60%' }, [el('stop', { offset: '0', 'stop-color': '#4fd8ff', 'stop-opacity': '.55' }), el('stop', { offset: '.6', 'stop-color': '#1a6dff', 'stop-opacity': '.22' }), el('stop', { offset: '1', 'stop-color': '#0a2a7a', 'stop-opacity': '.05' })]);
+    const cp = el('clipPath', { id: id + 'c' }, [el('path', { d: BRAIN })]);
+    const bl = el('filter', { id: id + 'g', x: '-30%', y: '-30%', width: '160%', height: '160%' }, [el('feGaussianBlur', { stdDeviation: '4', result: 'b' }), el('feMerge', {}, [el('feMergeNode', { in: 'b' }), el('feMergeNode', { in: 'SourceGraphic' })])]);
+    d.append(gr, cp, bl); s.appendChild(d);
+    const beat = el('g', { class: 'beat' });
+    beat.appendChild(el('path', { d: BRAIN, fill: `url(#${id}f)`, stroke: '#7fe6ff', 'stroke-width': '2.5', filter: `url(#${id}g)` }));
+    beat.appendChild(el('ellipse', { cx: 300, cy: 236, rx: 46, ry: 22, fill: 'rgba(60,170,255,.18)', stroke: 'rgba(127,230,255,.6)', 'stroke-width': '1.5' }));
+    beat.appendChild(el('path', { d: 'M206 252C210 272 214 290 212 312', stroke: 'rgba(127,230,255,.7)', 'stroke-width': '10', 'stroke-linecap': 'round', fill: 'none' }));
+    const inner = el('g', { 'clip-path': `url(#${id}c)` });
+    GYRI.forEach(q => inner.appendChild(el('path', { d: q, stroke: 'rgba(150,230,255,.35)', 'stroke-width': '2', fill: 'none', 'stroke-linecap': 'round' })));
+    // 칩에서 뻗는 회로선 + 흐르는 신호
+    let sd = id.length * 97 + 11; const r = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+    const C = { x: 172, y: 112, w: 76, h: 76 };
+    for (let i = 0; i < 26; i++) {
+      const side = i % 4, t = (Math.floor(i / 4) + 1) / 8;
+      let x = side === 0 ? C.x + C.w * t : side === 1 ? C.x + C.w : side === 2 ? C.x + C.w * t : C.x, y = side === 0 ? C.y : side === 1 ? C.y + C.h * t : side === 2 ? C.y + C.h : C.y + C.h * t;
+      const dx = side === 1 ? 1 : side === 3 ? -1 : 0, dy = side === 0 ? -1 : side === 2 ? 1 : 0; const L1 = 14 + r() * 24, L2 = 24 + r() * 60, turn = r() < .5 ? -1 : 1;
+      const x1 = x + dx * L1, y1 = y + dy * L1; const x2 = x1 + (dx || turn) * L2 * .7, y2 = y1 + (dy || turn) * L2 * .7; const x3 = x2 + dx * L2 * .5, y3 = y2 + dy * L2 * .5;
+      const dd = `M${x} ${y}L${x1} ${y1}L${x2} ${y2}L${x3} ${y3}`;
+      inner.appendChild(el('path', { d: dd, stroke: 'rgba(120,220,255,.55)', 'stroke-width': '1.6', fill: 'none' }));
+      const sig = el('path', { d: dd, class: 'sig', pathLength: '100', stroke: '#e6fbff', 'stroke-width': '2.6', fill: 'none', 'stroke-linecap': 'round' });
+      sig.style.animationDelay = (r() * 2.2).toFixed(2) + 's'; inner.appendChild(sig);
+      const n = el('circle', { cx: x3, cy: y3, r: 3.2, class: 'node', fill: '#bff4ff' }); n.style.animationDelay = (r() * 1.1).toFixed(2) + 's'; inner.appendChild(n);
+    }
+    // 신경망 점
+    for (let i = 0; i < 40; i++) { const c = el('circle', { cx: 60 + r() * 300, cy: 40 + r() * 220, r: .8 + r() * 1.8, fill: 'rgba(200,245,255,.7)', class: 'spark' }); c.style.animationDelay = (r() * 3).toFixed(2) + 's'; inner.appendChild(c); }
+    beat.appendChild(inner);
+    // 칩
+    const chip = el('g', { class: 'chip' });
+    for (let k = 0; k < 9; k++) { const o = C.x + 8 + k * 7.5; chip.appendChild(el('path', { d: `M${o} ${C.y - 6}V${C.y}M${o} ${C.y + C.h}V${C.y + C.h + 6}M${C.x - 6} ${C.y + 8 + k * 7.5}H${C.x}M${C.x + C.w} ${C.y + 8 + k * 7.5}H${C.x + C.w + 6}`, stroke: '#9eeeff', 'stroke-width': '2' })); }
+    chip.appendChild(el('rect', { x: C.x, y: C.y, width: C.w, height: C.h, rx: 8, fill: 'rgba(20,90,180,.85)', stroke: '#c9f6ff', 'stroke-width': '2.5', filter: `url(#${id}g)` }));
+    const tx = el('text', { x: C.x + C.w / 2, y: C.y + C.h / 2 + 13, 'text-anchor': 'middle', 'font-size': '38', 'font-weight': '900', fill: '#eafcff', 'font-family': 'Noto Sans KR, sans-serif' }); tx.textContent = 'AI'; chip.appendChild(tx);
+    beat.appendChild(chip); s.appendChild(beat);
+    return s;
+  }
+  function overlay(W, H, gw) {
+    let ov = document.getElementById('bgov'); if (ov) ov.remove();
+    ov = document.createElement('div'); ov.id = 'bgov'; wrap.appendChild(ov);
+    if (gw <= 120) return;
+    const s = Math.min(gw * .62, 190);
+    [gw / 2, W - gw / 2].forEach((x, i) => {
+      // AI 글자 테두리 DRL
+      const sv = el('svg', { class: 'aidrl', width: W, height: H, viewBox: `0 0 ${W} ${H}` });
+      const base = { x, y: H * .62, 'text-anchor': 'middle', 'font-size': s, 'font-weight': '900', 'font-family': 'Noto Sans KR, system-ui, sans-serif', fill: 'none' };
+      const t1 = el('text', { ...base, class: 'flow', stroke: '#eaffff', 'stroke-width': '3' }); t1.textContent = 'AI';
+      const t2 = el('text', { ...base, class: 'flow f2', stroke: '#6fe3ff', 'stroke-width': '5' }); t2.textContent = 'AI';
+      if (i) { t1.style.animationDelay = '-1.4s'; t2.style.animationDelay = '-2.6s'; }
+      sv.append(t2, t1); ov.appendChild(sv);
+      // 인공지능 뇌 (위쪽 빈 곳)
+      const bw = Math.min(gw * .86, 340); if (bw < 120) return;
+      const box = document.createElement('div'); box.className = 'brainbox'; box.style.cssText = `left:${x - bw / 2}px;top:${H * .2 - bw * .28}px;width:${bw}px;height:${bw * .95}px`;
+      box.innerHTML = '<i class="halo"></i><i class="ring r1"></i><i class="ring r2"></i><i class="ring r3"></i>' + Array.from({ length: 10 }, (_, k) => `<b class="pt" style="left:${20 + Math.random() * 60}%;animation-delay:${(k * .37).toFixed(2)}s"></b>`).join('');
+      const b = brainSVG('br' + i); box.appendChild(b); ov.appendChild(box);
+    });
   }
   const go = () => { clearTimeout(t); t = setTimeout(build, 150); };
   addEventListener('resize', go); mq.addEventListener && mq.addEventListener('change', go);

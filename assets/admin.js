@@ -21,10 +21,12 @@ const Demo = {
   ax_admin_members: ({ p_list }) => { const d = ds(); let n = 0; p_list.forEach(e => { if (!d.members.some(m => m.dept === e.dept && m.name === e.name)) { d.members.push({ id: 'u' + Date.now() + n, dept: e.dept, name: e.name }); n++; } }); dsave(d); return { ok: true, added: n }; },
   ax_admin_promote: () => ({ ok: true }),
   ax_admin_member_del: ({ p_member }) => { const d = ds(); const n = d.members.length; d.members = d.members.filter(m => m.id !== p_member); delete d.votes[p_member]; dsave(d); return { ok: d.members.length < n }; },
+  ax_admin_notes: () => { const d = ds(); const m = {}; Object.entries(d.notes || {}).forEach(([mid, ns]) => { const mem = d.members.find(x => x.id === mid) || {}; Object.entries(ns).forEach(([no, v]) => { const o = m[no] = m[no] || { no: +no, sum: 0, cnt: 0, comments: [] }; if (v.score) { o.sum += v.score; o.cnt++; } if (v.comment) o.comments.push({ comment: v.comment, name: mem.name, dept: mem.dept, score: v.score }); }); });
+    return { ok: true, items: Object.values(m).map(o => ({ ...o, avg: o.cnt ? Math.round(o.sum / o.cnt * 10) / 10 : null })) }; },
   ax_admin_reset: ({ p_member }) => { const d = ds(); delete d.votes[p_member]; dsave(d); return { ok: true }; } };
 async function rpc(fn, args) { if (DEMO) return Demo[fn](args); const { data, error } = await sb.rpc(fn, args); if (error) throw error; return data; }
 if (DEMO) $('#demoNote').textContent = '미리보기 모드: 아무 열쇠나 넣으면 열려요. 같은 브라우저의 미리보기 투표 결과가 보여요.';
-let ov = null, timer = null;
+let ov = null, timer = null, nmap = {};
 async function load() {
   try { ov = await rpc('ax_admin_overview', { p_round: ROUND, p_key: KEY }); } catch (e) { toast('불러오지 못했어요'); return; }
   if (!ov || !ov.ok) { toast('관리 열쇠가 맞지 않아요'); $('#login').style.display = 'block'; $('#main').style.display = 'none'; return; }
@@ -44,9 +46,12 @@ async function load() {
   const devs = {}; ms.filter(m => m.device).forEach(m => (devs[m.device] = devs[m.device] || []).push(m));
   const dups = Object.values(devs).filter(a => a.length > 1);
   $('#dup').innerHTML = dups.length ? dups.map(a => a.map(m => `${esc(m.name)}(${esc(m.dept)})`).join(', ')).join('<br>') : '없음';
-  $('#tally').innerHTML = '<tr><th>순위</th><th>번호</th><th>후보</th><th>표</th></tr>' + ov.tally.map((t, i) => {
+  nmap = {}; try { const nr = await rpc('ax_admin_notes', { p_round: ROUND, p_key: KEY }); if (nr && nr.ok) nr.items.forEach(x => nmap[x.no] = x); } catch (e) {}
+  $('#tally').innerHTML = '<tr><th>순위</th><th>번호</th><th>후보</th><th>표</th><th>중요도</th></tr>' + ov.tally.map((t, i) => {
     const rank = ov.tally.findIndex(x => x.votes === t.votes) + 1;
-    return `<tr class="${i === 19 ? 'cutline' : ''}"><td>${rank}</td><td><span class="pill" style="background:${CATC[t.cat]}">${t.no}</span></td><td>${esc(t.sub)}</td><td><b>${t.votes}</b></td></tr>`; }).join('');
+    return `<tr class="${i === 19 ? 'cutline' : ''}"><td>${rank}</td><td><span class="pill" style="background:${CATC[t.cat]}">${t.no}</span></td><td>${esc(t.sub)}</td><td><b>${t.votes}</b></td><td>${nmap[t.no] && nmap[t.no].avg ? '★' + nmap[t.no].avg + ` <span style="color:var(--mut);font-size:12px">(${nmap[t.no].cnt})</span>` : '-'}</td></tr>`; }).join('');
+  const withC = Object.values(nmap).filter(x => x.comments && x.comments.length).sort((p, q) => p.no - q.no);
+  $('#notes').innerHTML = withC.length ? withC.map(x => { const c = cands.find(k => k.no === x.no) || {}; return `<div style="margin-bottom:10px"><b>${x.no}. ${esc(c.sub || '')}</b> ${x.avg ? `<span style="color:var(--gd)">★${x.avg}</span>` : ''}${x.comments.map(m => `<div style="padding-left:10px">“${esc(m.comment)}” <span style="color:var(--mut)">— ${esc(m.name || '')}, ${esc(m.dept || '')}${m.score ? ' · ★' + m.score : ''}</span></div>`).join('')}</div>`; }).join('') : '아직 없어요';
   $('#cmts').innerHTML = ov.comments.length ? ov.comments.map(c => `<div>“${esc(c.comment)}” <span style="color:var(--mut)">— ${esc(c.name)}, ${esc(c.dept)}</span></div>`).join('') : '아직 없어요';
   renderRoster();
   const pub = !!ov.round.results_public; $('#bPub').textContent = pub ? '공개 중 · 누르면 숨김' : '비공개 · 누르면 공개'; $('#bPub').className = 'sbtn' + (pub ? ' gold' : ' ghost');
@@ -62,7 +67,8 @@ $('#bCloses').onclick = async () => { const v = $('#closes').value; if (!v) retu
 $('#bCloseNow').onclick = async () => { await rpc('ax_admin_set', { p_round: ROUND, p_key: KEY, p_closes: new Date().toISOString(), p_opens: null, p_public: null }); toast('투표를 마감했어요'); load(); };
 $('#bPub').onclick = async () => { await rpc('ax_admin_set', { p_round: ROUND, p_key: KEY, p_closes: null, p_opens: null, p_public: !ov.round.results_public }); load(); };
 $('#bCsv').onclick = async () => { const cj = no => cands.find(c => c.no === no) || {};
-  const rows = [['순위', '번호', '후보', '표', '원본', '관련 기관', '관련 부서', '이미 있음', '원본 링크']].concat(ov.tally.map((t, i) => [ov.tally.findIndex(x => x.votes === t.votes) + 1, t.no, t.sub, t.votes, cj(t.no).orig, cj(t.no).org, cj(t.no).dept, cj(t.no).built ? '예' : '', (cj(t.no).links || []).join(' ')]));
+  const rows = [['순위', '번호', '후보', '표', '중요도(평균)', '원본', '관련 기관', '관련 부서', '이미 있음', '원본 링크']].concat(ov.tally.map((t, i) => [ov.tally.findIndex(x => x.votes === t.votes) + 1, t.no, t.sub, t.votes, (nmap[t.no] || {}).avg || '', cj(t.no).orig, cj(t.no).org, cj(t.no).dept, cj(t.no).built ? '예' : '', (cj(t.no).links || []).join(' ')]));
+  Object.values(nmap).forEach(x => (x.comments || []).forEach(m => {})); rows.push([], ['후보 번호', '후보', '의견', '점수', '이름', '부서']); Object.values(nmap).sort((p, q) => p.no - q.no).forEach(x => (x.comments || []).forEach(m => rows.push([x.no, (cj(x.no) || {}).sub, m.comment, m.score || '', m.name, m.dept])));
   rows.push([], ['이름', '부서', '한 줄 의견', '고른 번호']); ov.comments.forEach(c => rows.push([c.name, c.dept, c.comment, (c.picks || []).join(' ')]));
   const csv = rows.map(r => r.map(x => `"${String(x ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
   try { await navigator.clipboard.writeText(csv); toast('CSV를 복사했어요. 엑셀에 붙여 넣으세요'); } catch (e) { $('#nudge').value = csv; toast('독려 문구 칸에 CSV를 넣었어요. 복사해 주세요'); } };

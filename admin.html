@@ -78,7 +78,9 @@ tr.cutline td{border-bottom:3px dashed var(--gd)}
 @media print{body{background:#fff}.wrap,.toast,.rep .bar2{display:none!important}.rep{position:static;background:#fff;padding:0;display:block}.paper{padding:0;max-width:none}}
 
 .aslogan{height:46px;margin-right:6px;filter:drop-shadow(0 0 6px rgba(34,230,255,.3))}
-.lslogan{position:fixed;top:14px;right:20px;height:52px;z-index:40;pointer-events:none;filter:drop-shadow(0 0 6px rgba(34,230,255,.3))}
+.lslogan{position:fixed;top:14px;right:20px;height:64px;z-index:40;pointer-events:none;filter:drop-shadow(0 0 6px rgba(34,230,255,.3))}
+@media (min-width:701px){.wrap{max-width:min(1080px,calc(100vw - 300px))}}
+@media (min-width:1500px){.lslogan{height:104px}.wrap{max-width:min(1080px,calc(100vw - 480px))}}
 /* ── 관리자 휴대폰 화면: 위쪽 탭으로 한 부분씩 ── */
 .mtabs{display:none}
 @media (max-width:700px){
@@ -161,6 +163,7 @@ tr.cutline td{border-bottom:3px dashed var(--gd)}
           <div class="row" style="margin-top:10px"><button class="sbtn ghost" id="bCloseNow">지금 마감</button><button class="sbtn ghost" id="bPub">비공개 · 누르면 공개</button></div>
           <div class="hint" style="margin-top:10px">공개하면 투표 사이트에서 모두가 결과 포스터(순위·비율, 표 수와 이름은 비공개)를 볼 수 있어요.</div></div>
         <div data-t="tally" class="box"><h2>한 줄 의견</h2><div class="list" id="cmts"></div></div>
+        <div data-t="tally" class="box"><h2>후보별 의견·중요도</h2><div class="hint">선정위원이 후보마다 남긴 별점(1~5)과 의견이에요.</div><div class="list" id="notes">아직 없어요</div></div>
       </div>
     </div>
 
@@ -200,9 +203,9 @@ tr.cutline td{border-bottom:3px dashed var(--gd)}
   <textarea id="rText"></textarea>
 </div>
 
-<script src="assets/config.js?v=20261120u"></script>
+<script src="assets/config.js?v=20261120w"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="assets/poster.js?v=20261120u"></script>
-<script src="assets/admin.js?v=20261120u"></script>
+<script src="assets/poster.js?v=20261120w"></script>
+<script src="assets/admin.js?v=20261120w"></script>
 </body>
 </html>
