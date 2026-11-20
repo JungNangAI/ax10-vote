@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>AX10 투표 관리 · 중랑AI혁신팀</title>
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#030b1a;--card:#0a1c38;--line:rgba(34,230,255,.28);--cy:#22e6ff;--gd:#ffbf4a;--ink:#eaf6ff;--mut:#8fb0c6}
+*{box-sizing:border-box;margin:0}
+body{font-family:'Noto Sans KR',system-ui,sans-serif;background:radial-gradient(1200px 600px at 80% -10%,#0d2a55,transparent),var(--bg);color:var(--ink);min-height:100vh;word-break:keep-all;-webkit-text-size-adjust:100%}
+.wrap{max-width:1080px;margin:0 auto;padding:24px 18px 60px}
+header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+header img{width:44px;height:44px;border-radius:12px}
+header h1{font-size:22px;font-weight:900}header p{font-size:13px;color:var(--mut)}
+header .sp{flex:1}
+.box{background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px}
+.box h2{font-size:16px;font-weight:900;margin-bottom:10px;color:var(--cy)}
+.box .hint{font-size:13px;color:var(--mut);margin:-4px 0 10px;line-height:1.55}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media (max-width:820px){.grid{grid-template-columns:1fr}}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+@media (max-width:640px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:14px;text-align:center}
+.kpi b{display:block;font-size:30px;font-weight:900;color:var(--cy)}.kpi span{font-size:13px;color:var(--mut)}
+.seats{display:flex;flex-wrap:wrap;gap:6px}
+.seat{width:18px;height:18px;border-radius:6px;background:#17304f;border:1px solid #284a72}
+.seat.on{background:var(--cy);border-color:#fff;box-shadow:0 0 8px var(--cy)}
+.sbtn{font:inherit;font-size:14px;font-weight:800;border:0;border-radius:12px;padding:9px 14px;cursor:pointer;background:var(--cy);color:#02101f}
+.sbtn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.sbtn.gold{background:var(--gd);color:#241500;border:0}
+.sbtn:disabled{opacity:.4;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+input,textarea,select{font:inherit;font-size:14px;color:var(--ink);background:#061328;border:1.5px solid var(--line);border-radius:10px;padding:9px 11px}
+textarea{width:100%;min-height:120px;resize:vertical;line-height:1.5}
+.list{font-size:14px;line-height:1.9}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:7px 8px;border-bottom:1px solid #1b3456;text-align:center}
+th{color:var(--mut);font-weight:700}
+td:nth-child(3){text-align:left}
+tr.cutline td{border-bottom:3px dashed var(--gd)}
+.pill{display:inline-block;min-width:26px;padding:2px 6px;border-radius:7px;color:#02101f;font-weight:900;font-size:12px}
+.login{max-width:420px;margin:12vh auto 0;text-align:center}
+.login img{width:84px;height:84px;border-radius:20px;margin-bottom:14px}
+.login h1{font-size:24px;font-weight:900;margin-bottom:6px}.login p{color:var(--mut);font-size:14px;margin-bottom:18px}
+.login input{width:100%;font-size:16px;padding:13px;margin-bottom:10px;text-align:center}
+.login .sbtn{width:100%;padding:13px;font-size:16px}
+#demoNote{color:var(--gd);font-size:13px;margin-top:12px}
+.toast{position:fixed;left:50%;top:18px;transform:translate(-50%,-30px);opacity:0;z-index:99;background:#fff;color:#1f1f24;font-weight:800;font-size:15px;padding:10px 16px;border-radius:14px;border:2.5px solid #1f1f24;transition:.25s;pointer-events:none;max-width:90vw;text-align:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+/* 결과보고서 */
+.rep{position:fixed;inset:0;z-index:80;background:rgba(0,4,12,.85);display:none;overflow:auto;padding:20px 12px}
+.rep.on{display:block}
+.rep .bar2{max-width:820px;margin:0 auto 10px;display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+.paper{max-width:820px;margin:0 auto;background:#fff;color:#111;padding:44px 48px;border-radius:6px;font-family:'Noto Sans KR',sans-serif}
+.paper h1{font-size:22px;text-align:center;margin-bottom:6px}
+.paper .dt{text-align:right;font-size:13px;color:#555;margin-bottom:14px}
+.paper .sum{border:1.5px solid #333;padding:10px 12px;font-size:14px;line-height:1.6;margin-bottom:10px}
+.paper h2{font-size:16px;margin:18px 0 8px}
+.paper ul{list-style:none;padding-left:8px;font-size:14px;line-height:1.8}
+.paper table{font-size:13px;margin:4px 0}
+.paper th,.paper td{border:1px solid #999;color:#111;padding:5px 6px}
+.paper th{background:#eef2f7}
+.paper td.l{text-align:left}
+.paper tr.cut td{border-bottom:2.5px solid #c00}
+.paper .note{font-size:12px;color:#555}
+.pimg{max-width:820px;margin:0 auto 14px;text-align:center}.pimg img{width:100%;max-width:540px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.6)}.pimg p{color:var(--mut);font-size:13px;margin:8px 0}
+.paper .bar{display:inline-block;height:9px;background:#2b6cb0;border-radius:3px;margin-right:6px;vertical-align:middle}
+#rText{position:absolute;left:-9999px}
+.roster{margin-top:12px;display:grid;gap:6px;font-size:14px}
+.rdept{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid #1b3456}
+.rdept>b{min-width:120px;color:var(--mut);font-weight:700}
+.rm{display:inline-flex;align-items:center;gap:5px;background:#0f2748;border:1px solid #234a75;border-radius:10px;padding:3px 4px 3px 10px}
+.rm i{font-style:normal;color:var(--cy);font-weight:900}
+.rm .sbtn{padding:3px 8px;font-size:12px;border-radius:8px}
+@media print{body{background:#fff}.wrap,.toast,.rep .bar2{display:none!important}.rep{position:static;background:#fff;padding:0;display:block}.paper{padding:0;max-width:none}}
+
+.aslogan{height:46px;margin-right:6px;filter:drop-shadow(0 0 6px rgba(34,230,255,.3))}
+.lslogan{position:fixed;top:14px;right:20px;height:64px;z-index:40;pointer-events:none;filter:drop-shadow(0 0 6px rgba(34,230,255,.3))}
+@media (min-width:701px){.wrap{max-width:min(1080px,calc(100vw - 300px))}}
+@media (min-width:1500px){.lslogan{height:104px}.wrap{max-width:min(1080px,calc(100vw - 480px))}}
+/* ── 관리자 휴대폰 화면: 위쪽 탭으로 한 부분씩 ── */
+.mtabs{display:none}
+@media (max-width:700px){
+  .wrap{padding:14px 12px 40px}
+  header{gap:8px;margin-bottom:10px;flex-wrap:wrap}
+  header img{width:36px;height:36px}
+  header h1{font-size:18px}header p{display:none}
+  header .sbtn{padding:7px 10px;font-size:13px}
+  .lslogan{height:30px;top:12px;right:12px}
+  header{padding-right:64px;flex-wrap:nowrap}#bRefresh{display:none}
+  .mtabs{display:flex;gap:6px;position:sticky;top:0;z-index:30;margin:0 -12px 12px;padding:8px 12px;background:rgba(3,11,26,.97);border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+  .mtabs::-webkit-scrollbar{display:none}
+  .mtabs button{flex:1 0 auto;font:inherit;font-size:14px;font-weight:800;color:var(--mut);background:transparent;border:1.5px solid var(--line);border-radius:999px;padding:7px 12px;cursor:pointer}
+  .mtabs button.on{background:var(--cy);color:#02101f;border-color:var(--cy)}
+  body:not([data-mt=now]) [data-t=now],body:not([data-mt=tally]) [data-t=tally],body:not([data-mt=roster]) [data-t=roster],body:not([data-mt=set]) [data-t=set]{display:none!important}
+  .grid{gap:0}
+  .box{padding:14px;border-radius:16px;margin-bottom:12px}
+  .kpis{gap:8px}.kpi{padding:10px}.kpi b{font-size:24px}
+  .list{font-size:13.5px;line-height:1.8}
+  table{font-size:13px}th,td{padding:6px 4px}
+  .rdept{display:block}.rdept>b{display:block;margin-bottom:4px}
+  .rm{margin:0 4px 4px 0}
+  .row input,.row select{flex:1 1 140px;min-width:0}
+  .row label{display:flex;align-items:center;gap:6px;flex:1 1 100%}
+  #xls{flex-basis:100%}
+  .row .sbtn{flex:1 1 auto}
+  textarea{font-size:13px}
+  .paper{padding:22px 16px}
+  .rep .bar2 .sbtn{flex:1 1 40%}
+}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+
+<img class="lslogan" src="assets/slogan.png" alt="#나의 자랑 우리 중랑">
+<div class="wrap">
+  <div class="login" id="login">
+    <img src="assets/logo.png" alt="AI파트너스">
+    <h1>AX10 투표 관리</h1>
+    <p>중랑AI혁신팀 전용 화면이에요. 관리 열쇠를 넣어 주세요.</p>
+    <input id="key" type="password" placeholder="관리 열쇠" autocomplete="current-password">
+    <button class="sbtn" id="bLogin">들어가기</button>
+    <div id="demoNote"></div>
+  </div>
+
+  <div id="main" style="display:none">
+    <header>
+      <img src="assets/logo-sm.png" alt="">
+      <div><h1>AX10 투표 관리</h1><p>30초마다 저절로 새로 고쳐져요 · 이 주소는 공유하지 마세요</p></div>
+      <div class="sp"></div>
+      <button class="sbtn ghost" id="bRefresh">새로 고침</button>
+      <button class="sbtn gold" id="bReport">결과보고서</button>
+    </header>
+
+    <nav class="mtabs" id="mtabs"><button data-mt="now" class="on">참여</button><button data-mt="tally">득표·의견</button><button data-mt="roster">명단</button><button data-mt="set">기간·설정</button></nav>
+    <div data-t="now" class="kpis">
+      <div class="kpi"><b id="kV">0</b><span>투표한 사람</span></div>
+      <div class="kpi"><b id="kT">0</b><span>전체 선정위원</span></div>
+      <div class="kpi"><b id="kP">0%</b><span>참여율</span></div>
+      <div class="kpi"><b id="kD">-</b><span>마감까지</span></div>
+    </div>
+
+    <div data-t="now" class="box"><h2>참여 좌석</h2><div class="hint">불 켜진 칸이 투표한 사람이에요. 칸에 마우스를 올리면 이름이 보여요.</div><div class="seats" id="seats"></div></div>
+
+    <div class="grid">
+      <div data-t="now" class="box"><h2>아직 안 한 사람</h2><div class="list" id="notYet"></div>
+        <h2 style="margin-top:14px">독려 문구</h2><textarea id="nudge"></textarea>
+        <div class="row" style="margin-top:8px"><button class="sbtn" id="bCopy">문구 복사</button></div></div>
+      <div data-t="now" class="box"><h2>투표한 사람</h2><div class="hint">시험 표나 잘못된 표는 '초기화'를 두 번 눌러 지워요. 그 사람은 다시 투표할 수 있어요.</div><div class="list" id="voted"></div>
+        <h2 style="margin-top:14px">같은 휴대폰으로 여러 명</h2><div class="list" id="dup"></div></div>
+    </div>
+
+    <div class="grid">
+      <div data-t="tally" class="box"><h2>득표 현황</h2><div class="hint">노란 점선 아래가 21위부터예요. 20위 동점은 혁신팀이 정해요.</div><table id="tally"></table>
+        <div class="row" style="margin-top:10px"><button class="sbtn ghost" id="bCsv">엑셀용 CSV 복사</button></div></div>
+      <div>
+        <div data-t="set" class="box"><h2>투표 기간·공개</h2>
+          <div class="row"><input type="datetime-local" id="closes"><button class="sbtn ghost" id="bCloses">마감 시각 바꾸기</button></div>
+          <div class="row" style="margin-top:10px"><button class="sbtn ghost" id="bCloseNow">지금 마감</button><button class="sbtn ghost" id="bPub">비공개 · 누르면 공개</button></div>
+          <div class="hint" style="margin-top:10px">공개하면 투표 사이트에서 모두가 결과 포스터(순위·비율, 표 수와 이름은 비공개)를 볼 수 있어요.</div></div>
+        <div data-t="tally" class="box"><h2>한 줄 의견</h2><div class="list" id="cmts"></div></div>
+        <div data-t="tally" class="box"><h2>후보별 의견·중요도</h2><div class="hint">선정위원이 후보마다 남긴 별점(1~5)과 의견이에요.</div><div class="list" id="notes">아직 없어요</div></div>
+      </div>
+    </div>
+
+    <div data-t="roster" class="box" id="rosterBox"><h2>명단 관리 · <span id="rosterN">0</span>명</h2>
+      <div class="hint">한 명씩 더하거나 빼요. 투표한 사람(✓)을 빼면 그 표도 함께 지워져요.</div>
+      <div class="row"><input id="aDept" list="deptList" placeholder="부서 (예: 기획예산과)" size="16"><datalist id="deptList"></datalist><input id="aName" placeholder="이름" size="8"><button class="sbtn" id="bAdd">한 명 더하기</button></div>
+      <div id="roster" class="roster"></div>
+      <h2 style="margin-top:16px">엑셀로 한꺼번에</h2>
+      <div class="hint">① 현재 명단을 엑셀로 받아 ② 엑셀에서 더하거나 지우고 ③ 다시 올려요. 엑셀 첫 줄에 '부서', '성명'(또는 '이름') 칸이 있으면 돼요.<br>'새 사람만 더하기'는 기존 명단을 건드리지 않고, '엑셀과 똑같이 맞추기'는 엑셀에 없는 사람을 명단에서 빼요.</div>
+      <div class="row"><button class="sbtn ghost" id="bDown">① 현재 명단 엑셀 받기</button><input type="file" id="xls" accept=".xlsx,.xls,.csv"><button class="sbtn" id="bUp" disabled>새 사람만 더하기</button><button class="sbtn ghost" id="bSync" disabled>엑셀과 똑같이 맞추기</button></div>
+      <div class="list" id="upPrev" style="margin-top:8px;font-size:13px"></div>
+    </div>
+
+    <div data-t="set" class="box"><h2>2차 투표 만들기 (1차가 끝난 뒤)</h2><div class="hint">1차 상위 후보로 전 직원 투표 회차를 새로 만들어요. 만든 뒤 config.js의 round 값을 새 회차 이름으로 바꾸면 사이트가 2차로 바뀌어요.</div>
+      <div class="row">
+        <label>회차 이름 <input id="pNew" value="ax20-2" size="8"></label>
+        <label>상위 <input id="pTop" type="number" value="20" style="width:70px">종</label>
+        <label>1인 최대 <input id="pMax" type="number" value="5" style="width:70px">개</label>
+        <label>마감 <input id="pCloses" type="datetime-local" value="2026-11-27T18:00"></label>
+        <label>2차 관리 열쇠 <input id="pKey" type="password" size="14"></label>
+        <button class="sbtn ghost" id="bPromote">2차 만들기</button>
+      </div></div>
+  </div>
+</div>
+
+<div class="rep" id="rep">
+  <div class="bar2">
+    <button class="sbtn gold" id="rPoster">🖼 포스터 받기(공개용)</button>
+    <button class="sbtn gold" id="rPosterIn">🖼 포스터 받기(내부용·표 수)</button>
+    <button class="sbtn" id="rCopy">개조식 문구 복사</button>
+    <button class="sbtn ghost" id="rData">데이터 복사</button>
+    <button class="sbtn ghost" id="rPrint">인쇄·PDF</button>
+    <button class="sbtn gold" id="rClose">닫기</button>
+  </div>
+  <div class="pimg" id="pimg"></div>
+  <div class="paper" id="paper"></div>
+  <textarea id="rText"></textarea>
+</div>
+
+<script src="assets/config.js?v=pilot1"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="assets/poster.js?v=pilot1"></script>
+<script src="assets/admin.js?v=pilot1"></script>
+</body>
+</html>
