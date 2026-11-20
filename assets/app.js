@@ -63,7 +63,7 @@ const device = (() => { let d = store.get('device', null); if (!d) { d = (crypto
 let info = null, cands = [], byNo = {}, me = null, picks = [], MAX = 7, filter = 'all', recoSet = new Set(), serverSkew = 0;
 const ROUTES = { sCover: 'start', sWho: 'who', sVote: 'vote', sDone: 'done', sRes: 'result' };
 let routing = false;
-const show = id => { $$('.screen').forEach(s => s.classList.toggle('on', s.id === id)); $('#core').style.display = id === 'sVote' ? 'flex' : 'none'; $('#rail').classList.toggle('on', id === 'sVote'); window.scrollTo(0, 0);
+const show = id => { document.body.dataset.scr = id; $$('.screen').forEach(s => s.classList.toggle('on', s.id === id)); $('#core').style.display = id === 'sVote' ? 'flex' : 'none'; $('#rail').classList.toggle('on', id === 'sVote'); window.scrollTo(0, 0);
   if (!routing && location.hash !== '#' + ROUTES[id]) { try { history.pushState(null, '', '#' + ROUTES[id]); } catch (e) { location.hash = ROUTES[id]; } } };
 window.addEventListener('popstate', () => { const h = location.hash.slice(1) || 'start'; const id = Object.keys(ROUTES).find(k => ROUTES[k] === h) || 'sCover';
   routing = true; if ((id === 'sVote' || id === 'sDone') && !me) show('sWho'); else if (id === 'sVote') enterVote(); else show(id); routing = false; });
@@ -140,7 +140,7 @@ function boot(m, voted) {
 // ───────── vote screen ─────────
 function enterVote() {
   $('#hi').innerHTML = `<img class="ap" src="assets/logo-sm.png" alt=""><b>${esc(me.name)}</b><span>님</span><span class="dept">· ${esc(me.dept)}</span><button class="swap" id="bSwap">바꾸기</button>`;
-  $('#intro').innerHTML = `후보 <b>30종</b> 중 꼭 필요한 도구를 <b>최대 ${MAX}개</b> 골라 주세요. 오른쪽 막대로 위치를 볼 수 있어요.`;
+  $('#intro').innerHTML = `후보 <b>30종</b> 중 꼭 필요한 도구를 <b>최대 ${MAX}개</b> 골라 주세요. ${matchMedia('(min-width:900px) and (hover:hover)').matches ? '그림에 마우스를 올리면 한 줄 설명, <b>ⓘ 자세히</b>를 누르면 전체 설명이 나와요.' : '오른쪽 막대로 위치를 볼 수 있어요.'}`;
   $('#bSwap').onclick = () => { me = null; store.set('me', null); picks = []; show('sWho'); };
   renderTabs(); renderCards(); renderCore(); show('sVote'); $('#rail').classList.add('on'); updateRail();
 }

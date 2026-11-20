@@ -249,3 +249,33 @@ body.scrolling .card .info,body.scrolling .card .info:before,body.scrolling .car
 .modal{backdrop-filter:none;background:rgba(0,4,12,.8)}
 .top.compact .srow{display:flex}
 .rail,.rbub{transition:opacity .25s}
+/* ══ PC 화면 (넓은 화면 + 마우스) ══ */
+@media (min-width:900px) and (hover:hover){
+  body[data-scr=sVote] .wrap,body[data-scr=sRes] .wrap{max-width:1120px;padding:0 28px 150px}
+  body[data-scr=sVote] .top{margin:0 -28px;padding:14px 28px 12px}
+  .rail{display:none!important}
+  #cards{padding-right:0}
+  /* 자세히 보기(목록): 2단 */
+  #cards:not(.grid){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:14px;align-items:stretch}
+  #cards:not(.grid)>.cat,#cards:not(.grid)>.empty{grid-column:1/-1}
+  #cards:not(.grid) .card{margin-bottom:14px;height:calc(100% - 14px)}
+  /* 한눈에 보기: 5칸 + 마우스 올리면 말풍선 */
+  #cards.grid .gwrap{grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+  #cards.grid .card{overflow:visible;contain:none;padding:12px 8px 46px;cursor:pointer;transition:transform .15s}
+  #cards.grid .card .ch{width:88px;height:88px}
+  #cards.grid .card .t{font-size:14.5px}
+  #cards.grid .card:hover{transform:translateY(-3px);z-index:5}
+  #cards.grid .card .say{display:block;position:absolute;left:50%;bottom:calc(100% - 6px);transform:translate(-50%,6px);opacity:0;pointer-events:none;
+    width:max-content;max-width:220px;background:#fff;color:#1f1f24;font-weight:800;font-size:13.5px;line-height:1.4;border-radius:12px;padding:7px 11px;border:2.5px solid #1f1f24;transition:.18s;z-index:6;white-space:normal}
+  #cards.grid .card .say:after{content:'';position:absolute;left:50%;top:100%;transform:translateX(-50%);border:7px solid transparent;border-top-color:#1f1f24}
+  #cards.grid .card:hover .say{opacity:1;transform:translate(-50%,0)}
+  /* 목록 카드도 마우스 반응 */
+  .card{cursor:pointer}.card:hover{filter:brightness(1.08)}
+  /* 자세히 창: 화면 가운데 큰 창 */
+  .modal{align-items:center;padding:24px}
+  .sheet{width:min(680px,100%);border-radius:24px;border-bottom:1.5px solid rgba(34,230,255,.45);padding:26px 28px 28px;max-height:86vh}
+  .sheet .big img{width:150px;height:150px}
+  .sheet .bigsay{font-size:17px}
+  .core{width:min(720px,calc(100% - 40px))}
+  .tabs{flex-wrap:wrap}
+}
