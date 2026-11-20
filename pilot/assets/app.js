@@ -7,7 +7,7 @@ const store = { get(k, d) { try { const v = localStorage.getItem('ax10_' + k); r
                 set(k, v) { try { localStorage.setItem('ax10_' + k, JSON.stringify(v)); } catch (e) {} } };
 const CAT = { L: { name: 'L · Life', full: '주민 생활', c: '#ff4fd8', ju: '말주임', type: '생활 혁신가형', desc: '주민 삶 가까이에서 AI를 쓰고 싶은 선정위원' },
               O: { name: 'O · Office', full: '행정 업무', c: '#22e6ff', ju: '글주임', type: '행정 혁신가형', desc: '일하는 방식을 AI로 바꾸고 싶은 선정위원' } };
-const LEG = { doc: { type: '문서 혁신가형', c: '#22e6ff' }, law: { type: '근거 탐정형', c: '#ffbf4a' }, ops: { type: '업무 설계자형', c: '#4d8dff' }, civ: { type: '주민 소통가형', c: '#ff4fd8' } };
+const LEG = { doc: { type: '문서 혁신가형', c: '#22e6ff', ju: '글주임', desc: '쓰고 만드는 일을 AI로 바꾸고 싶은 선정위원' }, law: { type: '근거 탐정형', c: '#ffbf4a', ju: '눈주임', desc: '근거와 자료를 정확히 찾아내는 선정위원' }, ops: { type: '업무 설계자형', c: '#4d8dff', ju: '길주임', desc: '일하는 흐름을 똑똑하게 설계하는 선정위원' }, civ: { type: '주민 소통가형', c: '#ff4fd8', ju: '말주임', desc: '주민과 의회 곁에서 소통을 바꾸는 선정위원' } };
 const TAGS = { 1: 'hwp me', 2: 'hwp team', 3: 'me talk', 4: 'excel team', 5: 'hwp me field', 6: 'team', 7: 'excel hwp me', 8: 'ai me', 9: 'ai me', 10: 'ai citizen',
   11: 'me', 12: 'web team', 13: 'web team', 14: 'team', 15: 'web team', 16: 'web me', 17: 'web team', 18: 'web team', 19: 'web team', 20: 'excel me',
   21: 'team', 22: 'me', 23: 'web team', 24: 'me field', 25: 'citizen talk', 26: 'me talk', 27: 'team talk', 28: 'excel team', 29: 'web citizen field', 30: 'web citizen' };
@@ -338,9 +338,9 @@ $('#bGo').onclick = async () => {
 };
 
 // ───────── done ─────────
-function typeOf() { const cnt = {}; picks.forEach(n => cnt[byNo[n].cat] = (cnt[byNo[n].cat] || 0) + 1); const s = Object.entries(cnt).sort((a, b) => b[1] - a[1]);
+function typeOf() { const cnt = {}; picks.forEach(n => { const k = byNo[n].area || byNo[n].cat; cnt[k] = (cnt[k] || 0) + 1; }); const s = Object.entries(cnt).sort((a, b) => b[1] - a[1]);
   if (s.length > 1 && s[0][1] === s[1][1]) return { key: null, type: '올라운더형', desc: '분야를 가리지 않고 고르게 고른 선정위원', c: '#ffffff', ju: '글주임 패밀리' };
-  const k = s[0][0]; return { key: k, ...CAT[k] }; }
+  const k = s[0][0]; return { key: k, ...(LEG[k] || CAT[k]) }; }
 async function finish() {
   const T = typeOf();
   $('#doneMsg').innerHTML = `${esc(me.name)} 파트너님 덕분에 중랑이 더 똑똑해져요!`;

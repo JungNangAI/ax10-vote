@@ -124,7 +124,7 @@ $('#bPromote').onclick = async () => { const k = $('#pKey').value.trim(); if (!k
   toast(r && r.ok ? '2차 투표를 만들었어요. config.js의 round 값을 바꾸면 2차로 전환돼요' : '만들지 못했어요', 3500); };
 // ───────── 결과보고서 ─────────
 const CATN = { L: 'L · Life(주민 생활)', O: 'O · Office(행정 업무)' };
-const TYPEN = { L: '생활 혁신가형', O: '행정 혁신가형' };
+const TYPEN = { doc: '문서 혁신가형', law: '근거 탐정형', ops: '업무 설계자형', civ: '주민 소통가형', L: '생활 혁신가형', O: '행정 혁신가형' };
 const W = '일월화수목금토';
 const fd = (iso, t = true) => { const d = new Date(iso); return `’${String(d.getFullYear()).slice(2)}. ${d.getMonth() + 1}. ${d.getDate()}.(${W[d.getDay()]})${t ? ' ' + d.getHours() + '시' + (d.getMinutes() ? ' ' + d.getMinutes() + '분' : '') : ''}`; };
 function buildReport() {
@@ -137,7 +137,7 @@ function buildReport() {
   const totalPicks = tally.reduce((a, t) => a + t.votes, 0) || 1;
   const byCat = {}; Object.keys(CATN).forEach(k => byCat[k] = { sel: 0, votes: 0, all: tally.filter(t => t.cat === k).length });
   tally.forEach(t => { byCat[t.cat].votes += t.votes; }); top.forEach(t => byCat[t.cat].sel++);
-  const types = {}; (ov.ballots || []).forEach(b => { const c = {}; b.forEach(n => { const k = cj(n).cat; c[k] = (c[k] || 0) + 1; }); const s = Object.entries(c).sort((a, b) => b[1] - a[1]);
+  const types = {}; (ov.ballots || []).forEach(b => { const c = {}; b.forEach(n => { const k = cj(n).area || cj(n).cat; c[k] = (c[k] || 0) + 1; }); const s = Object.entries(c).sort((a, b) => b[1] - a[1]);
     const k = s.length > 1 && s[0][1] === s[1][1] ? 'all' : s[0] && s[0][0]; types[k] = (types[k] || 0) + 1; });
   const avg = (ov.ballots || []).length ? ((ov.ballots.reduce((a, b) => a + b.length, 0)) / ov.ballots.length).toFixed(1) : '0';
   const built = top.filter(t => cj(t.no).built).map(t => t.sub);
@@ -185,7 +185,7 @@ $('#bReport').onclick = () => { if (!ov) return; const r = buildReport(); $('#pa
 function posterData() {
   const ms = ov.members, voted = ms.filter(m => m.voted).length; const mx = Math.max(1, ...ov.tally.map(t => t.votes));
   const items = ov.tally.map(t => ({ no: t.no, rank: ov.tally.findIndex(x => x.votes === t.votes) + 1, votes: t.votes, ratio: Math.round(t.votes / mx * 100) }));
-  const tc = {}; let tot = 0; (ov.ballots || []).forEach(b => { const c = {}; b.forEach(n => { const k = (cands.find(x => x.no === n) || {}).cat; if (k) c[k] = (c[k] || 0) + 1; });
+  const tc = {}; let tot = 0; (ov.ballots || []).forEach(b => { const c = {}; b.forEach(n => { const cc = cands.find(x => x.no === n) || {}; const k = cc.area || cc.cat; if (k) c[k] = (c[k] || 0) + 1; });
     const sr = Object.entries(c).sort((p, q) => q[1] - p[1]); if (!sr.length) return; const k = sr.length > 1 && sr[0][1] === sr[1][1] ? 'all' : sr[0][0]; tc[k] = (tc[k] || 0) + 1; tot++; });
   const types = {}; Object.entries(tc).forEach(([k, v]) => types[k] = Math.round(v / Math.max(tot, 1) * 100));
   return { items, types, comments: ov.comments.map(c => c.comment).filter(Boolean).slice(0, 12), closes_at: ov.round.closes_at, max_pick: ov.round.max_pick || 7,
