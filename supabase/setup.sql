@@ -212,4 +212,13 @@ end $$;
 grant execute on function ax_round_info, ax_candidates, ax_search_member, ax_depts, ax_members_by_dept, ax_my_vote,
   ax_submit, ax_comment, ax_results, ax_admin_overview, ax_admin_set, ax_admin_members, ax_admin_promote, ax_admin_reset to anon, authenticated;
 revoke execute on function _ax_admin_ok from anon, authenticated;
+create or replace function ax_admin_member_del(p_round text, p_key text, p_member uuid) returns json
+language plpgsql security definer set search_path = public as $$
+begin
+  if not _ax_admin_ok(p_round, p_key) then return json_build_object('ok', false); end if;
+  delete from ax_member where round_id = p_round and id = p_member;
+  return json_build_object('ok', found);
+end $$;
+grant execute on function ax_admin_member_del(text, text, uuid) to anon, authenticated;
+
 notify pgrst, 'reload schema';

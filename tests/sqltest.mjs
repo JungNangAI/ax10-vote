@@ -25,3 +25,7 @@ const rr=(await q(`select ax_results('ax30-1') r`))[0].r; console.log('RES', JSO
 const ov=(await q(`select ax_admin_overview('ax30-1','여기에-관리열쇠') r`))[0].r; console.log(ov.ok, ov.members.length, ov.tally.slice(0,3), ov.comments);
 console.log(await q(`select ax_admin_promote('ax30-1','여기에-관리열쇠','ax20-2','2차',2,7,'2026-11-27 18:00+09','새열쇠') r`));
 console.log(await q(`select no, sub from ax_candidates('ax20-2')`));
+const del = (await q(`select id from ax_member where round_id='ax30-1' and name='김철수'`))[0].id;
+console.log('DEL wrongkey', await q(`select ax_admin_member_del('ax30-1','틀린',$1) r`,[del]));
+console.log('DEL', await q(`select ax_admin_member_del('ax30-1','여기에-관리열쇠',$1) r`,[del]));
+console.log('after', await q(`select count(*) from ax_member where round_id='ax30-1'`), await q(`select count(*) from ax_vote where member_id=$1`,[del]));

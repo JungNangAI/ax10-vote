@@ -19,6 +19,7 @@ const Demo = {
   ax_admin_set: ({ p_closes, p_public }) => { const d = ds(); if (p_closes) d.closes = p_closes; if (p_public != null) d.pub = p_public; dsave(d); return { ok: true }; },
   ax_admin_members: ({ p_list }) => { const d = ds(); let n = 0; p_list.forEach(e => { if (!d.members.some(m => m.dept === e.dept && m.name === e.name)) { d.members.push({ id: 'u' + Date.now() + n, dept: e.dept, name: e.name }); n++; } }); dsave(d); return { ok: true, added: n }; },
   ax_admin_promote: () => ({ ok: true }),
+  ax_admin_member_del: ({ p_member }) => { const d = ds(); const n = d.members.length; d.members = d.members.filter(m => m.id !== p_member); delete d.votes[p_member]; dsave(d); return { ok: d.members.length < n }; },
   ax_admin_reset: ({ p_member }) => { const d = ds(); delete d.votes[p_member]; dsave(d); return { ok: true }; } };
 async function rpc(fn, args) { if (DEMO) return Demo[fn](args); const { data, error } = await sb.rpc(fn, args); if (error) throw error; return data; }
 if (DEMO) $('#demoNote').textContent = '미리보기 모드: 아무 열쇠나 넣으면 열려요. 같은 브라우저의 미리보기 투표 결과가 보여요.';
@@ -46,6 +47,7 @@ async function load() {
     const rank = ov.tally.findIndex(x => x.votes === t.votes) + 1;
     return `<tr class="${i === 19 ? 'cutline' : ''}"><td>${rank}</td><td><span class="pill" style="background:${CATC[t.cat]}">${t.no}</span></td><td>${esc(t.sub)}</td><td><b>${t.votes}</b></td></tr>`; }).join('');
   $('#cmts').innerHTML = ov.comments.length ? ov.comments.map(c => `<div>“${esc(c.comment)}” <span style="color:var(--mut)">— ${esc(c.name)}, ${esc(c.dept)}</span></div>`).join('') : '아직 없어요';
+  renderRoster();
   const pub = !!ov.round.results_public; $('#bPub').textContent = pub ? '공개 중 · 누르면 숨김' : '비공개 · 누르면 공개'; $('#bPub').className = 'sbtn' + (pub ? ' gold' : ' ghost');
   const d = new Date(ov.round.closes_at); const p = n => String(n).padStart(2, '0');
   $('#closes').value = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
@@ -71,8 +73,44 @@ $('#xls').onchange = async e => { const f = e.target.files[0]; if (!f) return;
     let dept = String(r[dk] || '').trim().split(/\s+/)[0]; return { dept, name, raw: r[nk] }; });
   const ok = upList.filter(x => x.name && x.dept), bad = upList.filter(x => !(x.name && x.dept));
   $('#upPrev').innerHTML = `올릴 사람 <b>${ok.length}명</b>: ${ok.map(x => esc(x.name) + '(' + esc(x.dept) + ')').join(', ')}` + (bad.length ? `<br><span style="color:#ff8a8a">이름을 못 찾은 ${bad.length}건: ${bad.map(x => esc(x.raw) || '(빈칸)').join(', ')} → 엑셀에서 이름을 채운 뒤 다시 올려 주세요</span>` : '');
-  upList = ok; $('#bUp').disabled = !ok.length; };
+  upList = ok; $('#bUp').disabled = !ok.length;
+  const key = x => x.dept + '|' + x.name; const inFile = new Set(ok.map(key)); const have = new Set((ov ? ov.members : []).map(key));
+  const adds = ok.filter(x => !have.has(key(x))); syncDel = (ov ? ov.members : []).filter(m => !inFile.has(key(m)));
+  $('#upPrev').innerHTML += `<div style="margin-top:6px">새로 더할 사람 <b>${adds.length}명</b>${adds.length ? ': ' + adds.map(x => esc(x.name) + '(' + esc(x.dept) + ')').join(', ') : ''}<br>엑셀에 없어서 빠질 사람 <b>${syncDel.length}명</b>${syncDel.length ? ': ' + syncDel.map(m => esc(m.name) + '(' + esc(m.dept) + ')' + (m.voted ? ' <b style="color:#ff8a8a">투표함</b>' : '')).join(', ') : ''}</div>`;
+  $('#bSync').disabled = !ok.length || (!adds.length && !syncDel.length); };
+let syncDel = [];
 $('#bUp').onclick = async () => { const r = await rpc('ax_admin_members', { p_round: ROUND, p_key: KEY, p_list: upList.map(({ dept, name }) => ({ dept, name })) }); toast(r && r.ok ? `${r.added}명을 새로 올렸어요` : '올리지 못했어요'); load(); };
+$('#bSync').onclick = async () => { const b = $('#bSync');
+  if (!b.dataset.arm) { b.dataset.arm = 1; b.textContent = `한 번 더 누르면 ${syncDel.length}명 빼고 맞춰요`; b.classList.add('gold'); setTimeout(() => { delete b.dataset.arm; b.textContent = '엑셀과 똑같이 맞추기'; b.classList.remove('gold'); }, 4000); return; }
+  delete b.dataset.arm; b.textContent = '엑셀과 똑같이 맞추기'; b.classList.remove('gold');
+  let added = 0, removed = 0, fail = 0;
+  try { const r = await rpc('ax_admin_members', { p_round: ROUND, p_key: KEY, p_list: upList.map(({ dept, name }) => ({ dept, name })) }); added = r && r.ok ? r.added : 0; } catch (e) { fail++; }
+  for (const m of syncDel) { try { const r = await rpc('ax_admin_member_del', { p_round: ROUND, p_key: KEY, p_member: m.id }); r && r.ok ? removed++ : fail++; } catch (e) { fail++; } }
+  toast(fail ? `더함 ${added}명 · 뺌 ${removed}명 · ${fail}건 실패 (빼기 SQL을 실행했는지 확인해 주세요)` : `엑셀 명단으로 맞췄어요 · 더함 ${added}명 · 뺌 ${removed}명`, 3500);
+  syncDel = []; $('#bSync').disabled = true; load(); };
+// ── 명단 관리: 한 명 추가 · 빼기 · 엑셀로 받기 ──
+function renderRoster() {
+  const ms = [...ov.members].sort((a, b) => a.dept.localeCompare(b.dept, 'ko') || a.name.localeCompare(b.name, 'ko'));
+  const by = {}; ms.forEach(m => (by[m.dept] = by[m.dept] || []).push(m));
+  $('#deptList').innerHTML = Object.keys(by).map(d => `<option value="${esc(d)}">`).join('');
+  $('#rosterN').textContent = ms.length;
+  $('#roster').innerHTML = Object.entries(by).map(([d, list]) => `<div class="rdept"><b>${esc(d)}</b>${list.map(m => `<span class="rm">${esc(m.name)}${m.voted ? '<i title="투표함">✓</i>' : ''}<button class="sbtn ghost" data-del="${m.id}" data-nm="${esc(m.name)}" data-v="${m.voted ? 1 : ''}">빼기</button></span>`).join('')}</div>`).join('') || '명단이 비어 있어요';
+  document.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
+    if (!b.dataset.arm) { b.dataset.arm = 1; b.textContent = b.dataset.v ? '표도 지워져요 · 한 번 더' : '한 번 더 누르면 빼기'; b.classList.add('gold'); setTimeout(() => { if (b.isConnected) { delete b.dataset.arm; b.textContent = '빼기'; b.classList.remove('gold'); } }, 3000); return; }
+    clearTimeout(timer);
+    let r; try { r = await rpc('ax_admin_member_del', { p_round: ROUND, p_key: KEY, p_member: b.dataset.del }); } catch (e) { r = null; }
+    toast(r && r.ok ? `${b.dataset.nm}님을 명단에서 뺐어요` : '빼지 못했어요. 빼기 SQL을 먼저 실행해 주세요', 3000); load(); });
+}
+$('#bAdd').onclick = async () => { const dept = $('#aDept').value.trim(), name = $('#aName').value.trim();
+  if (!dept || !name) return toast('부서와 이름을 모두 넣어 주세요');
+  if (ov && ov.members.some(m => m.dept === dept && m.name === name)) return toast('이미 명단에 있어요');
+  const r = await rpc('ax_admin_members', { p_round: ROUND, p_key: KEY, p_list: [{ dept, name }] });
+  toast(r && r.ok && r.added ? `${name}님(${dept})을 더했어요` : '더하지 못했어요'); $('#aName').value = ''; $('#aName').focus(); load(); };
+$('#aName').onkeydown = e => { if (e.key === 'Enter') $('#bAdd').click(); };
+$('#bDown').onclick = () => { if (!ov || !window.XLSX) return toast('잠시 뒤 다시 눌러 주세요');
+  const rows = [...ov.members].sort((a, b) => a.dept.localeCompare(b.dept, 'ko') || a.name.localeCompare(b.name, 'ko')).map((m, i) => ({ 연번: i + 1, 부서: m.dept, 성명: m.name }));
+  const ws = XLSX.utils.json_to_sheet(rows); ws['!cols'] = [{ wch: 6 }, { wch: 18 }, { wch: 10 }]; const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'AI파트너스 명단');
+  try { XLSX.writeFile(wb, 'AI파트너스_명단_현재.xlsx'); toast('현재 명단을 받았어요. 고친 뒤 아래에 다시 올리면 돼요'); } catch (e) { toast('이 화면에서는 내려받기가 막혀 있어요'); } };
 $('#bPromote').onclick = async () => { const k = $('#pKey').value.trim(); if (!k) return toast('2차 관리 열쇠를 정해 주세요');
   const r = await rpc('ax_admin_promote', { p_round: ROUND, p_key: KEY, p_new: $('#pNew').value.trim(), p_title: '2차 전 직원 투표', p_top: +$('#pTop').value, p_max: +$('#pMax').value, p_closes: new Date($('#pCloses').value).toISOString(), p_new_key: k });
   toast(r && r.ok ? '2차 투표를 만들었어요. config.js의 round 값을 바꾸면 2차로 전환돼요' : '만들지 못했어요', 3500); };

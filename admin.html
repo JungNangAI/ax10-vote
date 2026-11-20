@@ -68,6 +68,12 @@ tr.cutline td{border-bottom:3px dashed var(--gd)}
 .paper .note{font-size:12px;color:#555}
 .paper .bar{display:inline-block;height:9px;background:#2b6cb0;border-radius:3px;margin-right:6px;vertical-align:middle}
 #rText{position:absolute;left:-9999px}
+.roster{margin-top:12px;display:grid;gap:6px;font-size:14px}
+.rdept{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid #1b3456}
+.rdept>b{min-width:120px;color:var(--mut);font-weight:700}
+.rm{display:inline-flex;align-items:center;gap:5px;background:#0f2748;border:1px solid #234a75;border-radius:10px;padding:3px 4px 3px 10px}
+.rm i{font-style:normal;color:var(--cy);font-weight:900}
+.rm .sbtn{padding:3px 8px;font-size:12px;border-radius:8px}
 @media print{body{background:#fff}.wrap,.toast,.rep .bar2{display:none!important}.rep{position:static;background:#fff;padding:0;display:block}.paper{padding:0;max-width:none}}
 </style>
 </head>
@@ -119,10 +125,17 @@ tr.cutline td{border-bottom:3px dashed var(--gd)}
           <div class="row" style="margin-top:10px"><button class="sbtn ghost" id="bCloseNow">지금 마감</button><button class="sbtn ghost" id="bPub">비공개 · 누르면 공개</button></div>
           <div class="hint" style="margin-top:10px">공개하면 투표 사이트에서 모두가 결과 포스터(순위·비율, 표 수와 이름은 비공개)를 볼 수 있어요.</div></div>
         <div class="box"><h2>한 줄 의견</h2><div class="list" id="cmts"></div></div>
-        <div class="box"><h2>명단 올리기</h2><div class="hint">엑셀 첫 줄에 '부서', '성명'(또는 '이름') 칸이 있으면 돼요. 이미 있는 사람은 건너뛰어요.</div>
-          <div class="row"><input type="file" id="xls" accept=".xlsx,.xls,.csv"><button class="sbtn" id="bUp" disabled>올리기</button></div>
-          <div class="list" id="upPrev" style="margin-top:8px;font-size:13px"></div></div>
       </div>
+    </div>
+
+    <div class="box" id="rosterBox"><h2>명단 관리 · <span id="rosterN">0</span>명</h2>
+      <div class="hint">한 명씩 더하거나 빼요. 투표한 사람(✓)을 빼면 그 표도 함께 지워져요.</div>
+      <div class="row"><input id="aDept" list="deptList" placeholder="부서 (예: 기획예산과)" size="16"><datalist id="deptList"></datalist><input id="aName" placeholder="이름" size="8"><button class="sbtn" id="bAdd">한 명 더하기</button></div>
+      <div id="roster" class="roster"></div>
+      <h2 style="margin-top:16px">엑셀로 한꺼번에</h2>
+      <div class="hint">① 현재 명단을 엑셀로 받아 ② 엑셀에서 더하거나 지우고 ③ 다시 올려요. 엑셀 첫 줄에 '부서', '성명'(또는 '이름') 칸이 있으면 돼요.<br>'새 사람만 더하기'는 기존 명단을 건드리지 않고, '엑셀과 똑같이 맞추기'는 엑셀에 없는 사람을 명단에서 빼요.</div>
+      <div class="row"><button class="sbtn ghost" id="bDown">① 현재 명단 엑셀 받기</button><input type="file" id="xls" accept=".xlsx,.xls,.csv"><button class="sbtn" id="bUp" disabled>새 사람만 더하기</button><button class="sbtn ghost" id="bSync" disabled>엑셀과 똑같이 맞추기</button></div>
+      <div class="list" id="upPrev" style="margin-top:8px;font-size:13px"></div>
     </div>
 
     <div class="box"><h2>2차 투표 만들기 (1차가 끝난 뒤)</h2><div class="hint">1차 상위 후보로 전 직원 투표 회차를 새로 만들어요. 만든 뒤 config.js의 round 값을 새 회차 이름으로 바꾸면 사이트가 2차로 바뀌어요.</div>
@@ -148,9 +161,9 @@ tr.cutline td{border-bottom:3px dashed var(--gd)}
   <textarea id="rText"></textarea>
 </div>
 
-<script src="assets/config.js?v=20261120j"></script>
+<script src="assets/config.js?v=20261120k"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="assets/admin.js?v=20261120j"></script>
+<script src="assets/admin.js?v=20261120k"></script>
 </body>
 </html>
