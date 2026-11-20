@@ -26,7 +26,8 @@ let ac; function blip(f = 660, d = .07, type = 'sine', v = .06) { if (!fx.snd) r
 function toast(t, ms = 1800) { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => el.classList.remove('on'), ms); }
 
 // ───────── data layer (Supabase or demo) ─────────
-let sb = null; if (!DEMO && window.supabase) sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseKey);
+const sbRpc = async (fn, args) => { const r = await fetch(CFG.supabaseUrl.replace(/\/$/, '') + '/rest/v1/rpc/' + fn, { method: 'POST', headers: { apikey: CFG.supabaseKey, 'Content-Type': 'application/json' }, body: JSON.stringify(args || {}) }); const t = await r.text(); let d = null; try { d = t ? JSON.parse(t) : null; } catch (e) { d = t; } return r.ok ? { data: d, error: null } : { data: null, error: d || { message: 'HTTP ' + r.status } }; };
+const sb = DEMO ? null : { rpc: sbRpc };
 const Demo = (() => {
   const db = store.get('demo', null) || { members: [], votes: {}, pub: false, closes: '2026-11-23T18:00:00+09:00' };
   if (!db.members.length) { const D = ['기획예산과', '재무과', '행정지원과', '민원여권과', '도시안전과', '건강증진과', '묵2동주민센터']; const N = ['김하늘', '이바다', '박구름', '최별', '정나래', '한결', '윤슬', '서아', '도윤', '하람', '지우', '은재', '유나', '시온'];

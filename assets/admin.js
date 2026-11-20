@@ -4,7 +4,8 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const CATC = { doc: '#22e6ff', law: '#ffbf4a', ops: '#4d8dff', civ: '#ff4fd8' };
 function toast(t, ms = 2000) { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => el.classList.remove('on'), ms); }
-let sb = null; if (!DEMO && window.supabase) sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseKey);
+const sbRpc = async (fn, args) => { const r = await fetch(CFG.supabaseUrl.replace(/\/$/, '') + '/rest/v1/rpc/' + fn, { method: 'POST', headers: { apikey: CFG.supabaseKey, 'Content-Type': 'application/json' }, body: JSON.stringify(args || {}) }); const t = await r.text(); let d = null; try { d = t ? JSON.parse(t) : null; } catch (e) { d = t; } return r.ok ? { data: d, error: null } : { data: null, error: d || { message: 'HTTP ' + r.status } }; };
+const sb = DEMO ? null : { rpc: sbRpc };
 let KEY = ''; try { KEY = sessionStorage.getItem('ax10_admin') || ''; } catch (e) {}
 let cands = [];
 // demo backend shares the voting page's demo store in this browser
