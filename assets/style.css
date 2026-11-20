@@ -279,3 +279,10 @@ body.scrolling .card .info,body.scrolling .card .info:before,body.scrolling .car
   .core{width:min(720px,calc(100% - 40px))}
   .tabs{flex-wrap:wrap}
 }
+/* PC 양옆 배경 (bgfx.js) */
+#bgfx{position:fixed;inset:0;z-index:0;pointer-events:none;display:none;overflow:hidden}
+#bgfx canvas{display:block}
+#bgfx .sweep{position:absolute;top:0;bottom:0;width:30%;left:-30%;background:linear-gradient(90deg,transparent,rgba(80,200,255,.07),transparent);animation:bgsweep 9s linear infinite;will-change:transform}
+@keyframes bgsweep{to{transform:translateX(433%)}}
+body.nomo #bgfx .sweep{display:none}
+@media (prefers-reduced-motion:reduce){#bgfx .sweep{display:none}}
