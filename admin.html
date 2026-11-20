@@ -66,6 +66,7 @@ tr.cutline td{border-bottom:3px dashed var(--gd)}
 .paper td.l{text-align:left}
 .paper tr.cut td{border-bottom:2.5px solid #c00}
 .paper .note{font-size:12px;color:#555}
+.pimg{max-width:820px;margin:0 auto 14px;text-align:center}.pimg img{width:100%;max-width:540px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.6)}.pimg p{color:var(--mut);font-size:13px;margin:8px 0}
 .paper .bar{display:inline-block;height:9px;background:#2b6cb0;border-radius:3px;margin-right:6px;vertical-align:middle}
 #rText{position:absolute;left:-9999px}
 .roster{margin-top:12px;display:grid;gap:6px;font-size:14px}
@@ -182,17 +183,21 @@ tr.cutline td{border-bottom:3px dashed var(--gd)}
 
 <div class="rep" id="rep">
   <div class="bar2">
+    <button class="sbtn gold" id="rPoster">🖼 포스터 받기(공개용)</button>
+    <button class="sbtn gold" id="rPosterIn">🖼 포스터 받기(내부용·표 수)</button>
     <button class="sbtn" id="rCopy">개조식 문구 복사</button>
     <button class="sbtn ghost" id="rData">데이터 복사</button>
     <button class="sbtn ghost" id="rPrint">인쇄·PDF</button>
     <button class="sbtn gold" id="rClose">닫기</button>
   </div>
+  <div class="pimg" id="pimg"></div>
   <div class="paper" id="paper"></div>
   <textarea id="rText"></textarea>
 </div>
 
-<script src="assets/config.js?v=20261120r"></script>
+<script src="assets/config.js?v=20261120s"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="assets/admin.js?v=20261120r"></script>
+<script src="assets/poster.js?v=20261120s"></script>
+<script src="assets/admin.js?v=20261120s"></script>
 </body>
 </html>

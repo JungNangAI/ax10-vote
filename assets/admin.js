@@ -172,7 +172,27 @@ $('#bReport').onclick = () => { if (!ov) return; const r = buildReport(); $('#pa
   $('#rCopy').onclick = () => copyText(r.text, '개조식 문구를 복사했어요. 한글에 붙여 넣으세요');
   $('#rData').onclick = () => copyText(JSON.stringify(r.data, null, 1), '데이터를 복사했어요. Claude에게 붙여 넣으면 한글 파일로 만들어 드려요');
   $('#rPrint').onclick = () => { try { window.print(); } catch (e) { toast('이 화면에서는 인쇄가 막혀 있어요. 실제 사이트에서 눌러 주세요'); } };
+  $('#pimg').innerHTML = '';
+  $('#rPoster').onclick = () => posterDown(false); $('#rPosterIn').onclick = () => posterDown(true);
   $('#rClose').onclick = () => $('#rep').classList.remove('on'); };
+function posterData() {
+  const ms = ov.members, voted = ms.filter(m => m.voted).length; const mx = Math.max(1, ...ov.tally.map(t => t.votes));
+  const items = ov.tally.map(t => ({ no: t.no, rank: ov.tally.findIndex(x => x.votes === t.votes) + 1, votes: t.votes, ratio: Math.round(t.votes / mx * 100) }));
+  const tc = {}; let tot = 0; (ov.ballots || []).forEach(b => { const c = {}; b.forEach(n => { const k = (cands.find(x => x.no === n) || {}).cat; if (k) c[k] = (c[k] || 0) + 1; });
+    const sr = Object.entries(c).sort((p, q) => q[1] - p[1]); if (!sr.length) return; const k = sr.length > 1 && sr[0][1] === sr[1][1] ? 'all' : sr[0][0]; tc[k] = (tc[k] || 0) + 1; tot++; });
+  const types = {}; Object.entries(tc).forEach(([k, v]) => types[k] = Math.round(v / Math.max(tot, 1) * 100));
+  return { items, types, comments: ov.comments.map(c => c.comment).filter(Boolean).slice(0, 12), closes_at: ov.round.closes_at, max_pick: ov.round.max_pick || 7,
+    closed: new Date(ov.round.closes_at) <= new Date(ov.round.now || Date.now()), voted, members: ms.length, rate: ms.length ? Math.round(voted / ms.length * 100) : 0 };
+}
+async function posterDown(internal) {
+  if (!ov || !window.AXPoster) return toast('잠시 뒤 다시 눌러 주세요');
+  toast('포스터를 그리는 중이에요…', 1500);
+  const url = await window.AXPoster.make(posterData(), cands, { internal });
+  const name = internal ? 'AX30_20_결과포스터_내부용.png' : 'AX30_20_결과포스터.png';
+  $('#pimg').innerHTML = `<img src="${url}" alt="결과 포스터"><p>${internal ? '내부 보고용: 표 수와 참여율이 들어 있어요. 단톡방에는 공개용을 올려 주세요.' : '공개용: 순위와 비율만 들어 있어요.'} 저장이 안 되면 그림을 길게 누르거나 오른쪽 클릭해서 저장하세요.</p>`;
+  $('#rep').scrollTo({ top: 0, behavior: 'smooth' });
+  try { const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); toast('포스터를 내려받았어요'); } catch (e) {}
+}
 document.body.dataset.mt = 'now';
 document.querySelectorAll('#mtabs [data-mt]').forEach(b => b.onclick = () => { document.body.dataset.mt = b.dataset.mt; document.querySelectorAll('#mtabs [data-mt]').forEach(x => x.classList.toggle('on', x === b)); scrollTo(0, 0); });
 fetch('assets/candidates.json?v=20261120q').then(r => r.json()).then(c => { cands = c; if (KEY) load(); }).catch(() => {});
