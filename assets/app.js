@@ -1,13 +1,14 @@
 (() => {
 'use strict';
 const CFG = window.AX_CONFIG || {}; const ROUND = CFG.round || 'ax30-1';
-const DEMO = !(CFG.supabaseUrl && CFG.supabaseKey);
+const DEMO = !(CFG.supabaseUrl && CFG.supabaseKey) || /[?&]demo\b/.test(location.search);
+let ANON = false; const anonMe = () => ({ id: device, name: '', dept: '', anon: true });
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
-const store = { get(k, d) { try { const v = localStorage.getItem('ax10_' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
-                set(k, v) { try { localStorage.setItem('ax10_' + k, JSON.stringify(v)); } catch (e) {} } };
-const CAT = { L: { name: 'L · Life', full: '주민 생활', c: '#ff4fd8', ju: '말주임', type: '생활 혁신가형', desc: '주민 삶 가까이에서 AI를 쓰고 싶은 선정위원' },
-              O: { name: 'O · Office', full: '행정 업무', c: '#22e6ff', ju: '글주임', type: '행정 혁신가형', desc: '일하는 방식을 AI로 바꾸고 싶은 선정위원' } };
-const LEG = { doc: { type: '문서 혁신가형', c: '#22e6ff', ju: '글주임', desc: '쓰고 만드는 일을 AI로 바꾸고 싶은 선정위원' }, law: { type: '근거 탐정형', c: '#ffbf4a', ju: '눈주임', desc: '근거와 자료를 정확히 찾아내는 선정위원' }, ops: { type: '업무 설계자형', c: '#4d8dff', ju: '길주임', desc: '일하는 흐름을 똑똑하게 설계하는 선정위원' }, civ: { type: '주민 소통가형', c: '#ff4fd8', ju: '말주임', desc: '주민과 의회 곁에서 소통을 바꾸는 선정위원' } };
+const store = { get(k, d) { try { const v = localStorage.getItem('ax20_' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+                set(k, v) { try { localStorage.setItem('ax20_' + k, JSON.stringify(v)); } catch (e) {} } };
+const CAT = { L: { name: 'L · Life', full: '주민 생활', c: '#ff4fd8', ju: '말주임', type: '생활 혁신가형', desc: '주민 삶 가까이에서 AI를 쓰고 싶은 분' },
+              O: { name: 'O · Office', full: '행정 업무', c: '#22e6ff', ju: '글주임', type: '행정 혁신가형', desc: '일하는 방식을 AI로 바꾸고 싶은 분' } };
+const LEG = { doc: { type: '문서 혁신가형', c: '#22e6ff', ju: '글주임', desc: '쓰고 만드는 일을 AI로 바꾸고 싶은 분' }, law: { type: '근거 탐정형', c: '#ffbf4a', ju: '눈주임', desc: '근거와 자료를 정확히 찾아내는 분' }, ops: { type: '업무 설계자형', c: '#4d8dff', ju: '길주임', desc: '일하는 흐름을 똑똑하게 설계하는 분' }, civ: { type: '주민 소통가형', c: '#ff4fd8', ju: '말주임', desc: '주민과 의회 곁에서 소통을 바꾸는 분' } };
 const TAGS = { 1: 'hwp me', 2: 'hwp team', 3: 'me talk', 4: 'excel team', 5: 'hwp me field', 6: 'team', 7: 'excel hwp me', 8: 'ai me', 9: 'ai me', 10: 'ai citizen',
   11: 'me', 12: 'web team', 13: 'web team', 14: 'team', 15: 'web team', 16: 'web me', 17: 'web team', 18: 'web team', 19: 'web team', 20: 'excel me',
   21: 'team', 22: 'me', 23: 'web team', 24: 'me field', 25: 'citizen talk', 26: 'me talk', 27: 'team talk', 28: 'excel team', 29: 'web citizen field', 30: 'web citizen' };
@@ -28,13 +29,18 @@ function toast(t, ms = 1800) { const el = $('#toast'); el.textContent = t; el.cl
 const sbRpc = async (fn, args) => { const r = await fetch(CFG.supabaseUrl.replace(/\/$/, '') + '/rest/v1/rpc/' + fn, { method: 'POST', headers: { apikey: CFG.supabaseKey, 'Content-Type': 'application/json' }, body: JSON.stringify(args || {}) }); const t = await r.text(); let d = null; try { d = t ? JSON.parse(t) : null; } catch (e) { d = t; } return r.ok ? { data: d, error: null } : { data: null, error: d || { message: 'HTTP ' + r.status } }; };
 const sb = DEMO ? null : { rpc: sbRpc };
 const Demo = (() => {
-  const db = store.get('demo', null) || { members: [], votes: {}, pub: false, closes: '2026-11-23T18:00:00+09:00' };
+  const db = store.get('demo', null) || { members: [], votes: {}, pub: false, closes: '2026-12-02T18:00:00+09:00' };
   if (!db.members.length) { const D = ['기획예산과', '재무과', '행정지원과', '민원여권과', '도시안전과', '건강증진과', '묵2동주민센터']; const N = ['김하늘', '이바다', '박구름', '최별', '정나래', '한결', '윤슬', '서아', '도윤', '하람', '지우', '은재', '유나', '시온'];
     N.forEach((n, i) => db.members.push({ id: 'm' + i, dept: D[i % D.length], name: n + (i > 6 ? '' : '') })); }
   const save = () => store.set('demo', db);
   let cands = [];
   return { setCands(c) { cands = c; }, db, save,
-    ax_round_info: () => ({ id: ROUND, title: 'AX30 → 20', max_pick: 7, opens_at: '2026-11-20T00:00:00+09:00', closes_at: db.closes, results_public: db.pub, now: new Date().toISOString() }),
+    ax_round_info: () => ({ id: ROUND, title: 'AX20 → 10', max_pick: 10, opens_at: '2026-11-20T00:00:00+09:00', closes_at: db.closes, results_public: db.pub, anon: true, now: new Date().toISOString() }),
+    ax_anon_my: ({ p_device }) => db.votes[p_device] || null,
+    ax_anon_submit: ({ p_device, p_picks, p_comment }) => { db.votes[p_device] = { picks: p_picks, comment: p_comment || (db.votes[p_device] || {}).comment, device: p_device, updated_at: new Date().toISOString(), created_at: (db.votes[p_device] || {}).created_at || new Date().toISOString() }; save(); return { ok: true }; },
+    ax_anon_comment: ({ p_device, p_comment }) => { if (db.votes[p_device]) { db.votes[p_device].comment = p_comment; save(); } return { ok: !!db.votes[p_device] }; },
+    ax_anon_note_save: ({ p_device, p_no, p_score, p_comment }) => Demo.ax_note_save({ p_member: p_device, p_no, p_score, p_comment }),
+    ax_anon_my_notes: ({ p_device }) => Demo.ax_my_notes({ p_member: p_device }),
     ax_candidates: () => cands,
     ax_search_member: ({ p_q }) => db.members.filter(m => p_q.trim().length >= 2 && m.name.includes(p_q.trim())).slice(0, 10),
     ax_depts: () => [...new Set(db.members.map(m => m.dept))].sort().map(dept => ({ dept })),
@@ -51,10 +57,12 @@ const Demo = (() => {
       const tc = {}; let tot = 0; Object.values(db.votes).forEach(v => { const c = {}; v.picks.forEach(n => { const k = (cands.find(x => x.no === n) || {}).cat; c[k] = (c[k] || 0) + 1; }); const s = Object.entries(c).sort((x, y) => y[1] - x[1]); if (!s.length) return; const k = s.length > 1 && s[0][1] === s[1][1] ? 'all' : s[0][0]; tc[k] = (tc[k] || 0) + 1; tot++; });
       const types = Object.fromEntries(Object.entries(tc).map(([k, v]) => [k, Math.round(v / Math.max(tot, 1) * 100)]));
       return { public: true, items: arr.map((a, i) => ({ no: a.no, rank: arr.findIndex(b => b.v === a.v) + 1, ratio: Math.round(a.v / mx * 100) })), types, comments: Object.values(db.votes).map(v => v.comment).filter(Boolean).slice(0, 12),
-        title: 'AX30 → 20', opens_at: '2026-11-20T15:00:00+09:00', closes_at: db.closes, max_pick: 7, closed: new Date(db.closes) < new Date() }; } };
+        title: 'AX20 → 10', opens_at: '2026-11-25T09:00:00+09:00', closes_at: db.closes, max_pick: 10, anon: true, closed: new Date(db.closes) < new Date() }; } };
 })();
 window.AX_DEMO = Demo;
+const ANON_MAP = { ax_my_vote: 'ax_anon_my', ax_submit: 'ax_anon_submit', ax_comment: 'ax_anon_comment', ax_note_save: 'ax_anon_note_save', ax_my_notes: 'ax_anon_my_notes' };
 async function rpc(fn, args = {}) {
+  if (ANON && ANON_MAP[fn]) { fn = ANON_MAP[fn]; args = Object.assign({}, args); delete args.p_member; }
   if (DEMO) return Demo[fn](args);
   for (let i = 0; i < 3; i++) { const { data, error } = await sb.rpc(fn, args); if (!error) return data; if (i === 2) throw error; await new Promise(r => setTimeout(r, 600 * (i + 1))); }
 }
@@ -67,7 +75,7 @@ let routing = false;
 const show = id => { document.body.dataset.scr = id; $$('.screen').forEach(s => s.classList.toggle('on', s.id === id)); $('#core').style.display = id === 'sVote' ? 'flex' : 'none'; $('#rail').classList.toggle('on', id === 'sVote'); window.scrollTo(0, 0);
   if (!routing && location.hash !== '#' + ROUTES[id]) { try { history.pushState(null, '', '#' + ROUTES[id]); } catch (e) { location.hash = ROUTES[id]; } } };
 window.addEventListener('popstate', () => { const h = location.hash.slice(1) || 'start'; const id = Object.keys(ROUTES).find(k => ROUTES[k] === h) || 'sCover';
-  routing = true; if ((id === 'sVote' || id === 'sDone') && !me) show('sWho'); else if (id === 'sVote') enterVote(); else show(id); routing = false; });
+  routing = true; if ((id === 'sVote' || id === 'sDone') && !me) { if (ANON) choose(anonMe()); else show('sWho'); } else if (id === 'sVote') enterVote(); else show(id); routing = false; });
 const img = n => `assets/char/v${String(n).padStart(2, '0')}.webp`;
 
 // ───────── 3D hero (light fallback) ─────────
@@ -79,7 +87,7 @@ function mountHero() {
   const still = new Image(); still.className = 'still'; still.src = img(0); still.alt = '글주임'; st.appendChild(still);
   if (!fx.motion || !webglOK() || lowEnd()) return;
   const load = () => { const s = document.createElement('script'); s.src = 'assets/hero.js?v=20261120c';
-    s.onload = () => { has3D = true; still.remove(); try { G3D.floor(true); } catch (e) {} setTimeout(() => { try { G3D.say('안녕하세요, 선정위원님!'); } catch (e) {} }, 700); };
+    s.onload = () => { has3D = true; still.remove(); try { G3D.floor(true); } catch (e) {} setTimeout(() => { try { G3D.say('안녕하세요! 함께 골라요'); } catch (e) {} }, 700); };
     document.body.appendChild(s); };
   (window.requestIdleCallback || (f => setTimeout(f, 600)))(load, { timeout: 1500 });
 }
@@ -89,7 +97,8 @@ function fmtDate(iso) { const d = new Date(iso); const w = '일월화수목금�
 function tick() {
   if (!info) return; const now = Date.now() + serverSkew, end = new Date(info.closes_at).getTime(), start = new Date(info.opens_at).getTime();
   const el = $('#count');
-  if (now < start) { el.innerHTML = '투표 시작 전이에요'; $('#bStart').disabled = true; return; }
+  if (now < start) { const sd = new Date(start); el.innerHTML = `<b>${sd.getMonth() + 1}. ${sd.getDate()}.(${'일월화수목금토'[sd.getDay()]}) ${sd.getHours()}시</b>에 투표가 열려요`; $('#bStart').disabled = true; return; }
+  $('#bStart').disabled = false;
   if (now >= end) { el.innerHTML = '<b>투표가 마감됐어요</b> · 참여해 주셔서 고마워요'; $('#bStart').style.display = 'none'; return; }
   let s = Math.floor((end - now) / 1000); const d = Math.floor(s / 86400); s %= 86400; const h = Math.floor(s / 3600); s %= 3600; const m = Math.floor(s / 60); s %= 60;
   el.className = 'count' + (end - now < 86400000 ? ' hot' : '');
@@ -121,7 +130,7 @@ async function choose(m) {
   if (draft && draft.length && (!mv || !mv.picks || draft.join() !== mv.picks.join())) { picks = draft.filter(n => byNo[n]).slice(0, MAX); restored = true; }
   if (mv && mv.comment) $('#cmt').value = mv.comment;
   const seen = store.get('booted_' + m.id, false);
-  if (!seen && fx.motion) await boot(m, !!(mv && mv.picks)); else if (mv && mv.picks) toast(`${m.name} 파트너님, 이미 투표했어요. 고칠 수 있어요!`, 2400);
+  if (!seen && fx.motion) await boot(m, !!(mv && mv.picks)); else if (mv && mv.picks) toast(m.anon ? '이미 투표했어요. 마감 전까지 고칠 수 있어요!' : `${m.name} 파트너님, 이미 투표했어요. 고칠 수 있어요!`, 2400);
   store.set('booted_' + m.id, true);
   enterVote();
   if (restored) setTimeout(() => toast('고르던 내용을 이어서 보여 드려요. 제출해야 저장돼요!', 2600), 500);
@@ -130,20 +139,20 @@ function hello() { const h = new Date().getHours(); return h < 11 ? '좋은 아�
 function boot(m, voted) {
   return new Promise(res => {
     const ov = $('#ovBoot'), L = $('#bootLines'), H = $('#bootHello'); ov.classList.add('on'); L.innerHTML = ''; H.textContent = '';
-    const lines = ['AX SYSTEM ONLINE', 'AI PARTNERS 인증 중…', '선정위원 인증 완료 ✓']; let i = 0, done = false;
+    const lines = m.anon ? ['AX SYSTEM ONLINE', '익명 투표 준비 중…', '준비 완료 ✓ 이름은 받지 않아요'] : ['AX SYSTEM ONLINE', 'AI PARTNERS 인증 중…', '선정위원 인증 완료 ✓']; let i = 0, done = false;
     const finish = () => { if (done) return; done = true; ov.classList.remove('on'); res(); };
     $('#skipBoot').onclick = finish;
     const step = () => { if (done) return; if (i < lines.length) { L.innerHTML += (i ? '<br>' : '') + lines[i++]; blip(500 + i * 120, .05, 'square', .03); setTimeout(step, 420); }
-      else { const t = `${m.name} 파트너님, ${voted ? '다시 오셨네요!' : hello() + '!'}`; let k = 0; const ty = setInterval(() => { H.textContent = t.slice(0, ++k); if (k >= t.length) { clearInterval(ty); buzz([10, 40, 10]); setTimeout(finish, 650); } }, 38); } };
+      else { const t = m.anon ? (voted ? '다시 오셨네요! 고쳐도 돼요' : hello() + '! 꼭 필요한 도구를 골라 주세요') : `${m.name} 파트너님, ${voted ? '다시 오셨네요!' : hello() + '!'}`; let k = 0; const ty = setInterval(() => { H.textContent = t.slice(0, ++k); if (k >= t.length) { clearInterval(ty); buzz([10, 40, 10]); setTimeout(finish, 650); } }, 38); } };
     step();
   });
 }
 
 // ───────── vote screen ─────────
 function enterVote() {
-  $('#hi').innerHTML = `<img class="ap" src="assets/logo-sm.png" alt=""><b>${esc(me.name)}</b><span>님</span><span class="dept">· ${esc(me.dept)}</span><button class="swap" id="bSwap">바꾸기</button>`;
-  $('#intro').innerHTML = `후보 <b>30종</b> 중 꼭 필요한 도구를 <b>최대 ${MAX}개</b> 골라 주세요. ${matchMedia('(min-width:900px) and (hover:hover)').matches ? '그림에 마우스를 올리면 한 줄 설명, <b>ⓘ 자세히</b>를 누르면 전체 설명이 나와요.' : '오른쪽 막대로 위치를 볼 수 있어요.'}`;
-  $('#bSwap').onclick = () => { me = null; store.set('me', null); picks = []; show('sWho'); };
+  $('#hi').innerHTML = me.anon ? `<img class="ap" src="assets/logo-sm.png" alt=""><b>익명 투표</b><span class="dept">· 이름을 받지 않아요</span>` : `<img class="ap" src="assets/logo-sm.png" alt=""><b>${esc(me.name)}</b><span>님</span><span class="dept">· ${esc(me.dept)}</span><button class="swap" id="bSwap">바꾸기</button>`;
+  $('#intro').innerHTML = `후보 <b>${cands.length}종</b> 중 꼭 필요한 도구를 <b>최대 ${MAX}개</b> 골라 주세요. ${matchMedia('(min-width:900px) and (hover:hover)').matches ? '그림에 마우스를 올리면 한 줄 설명, <b>ⓘ 자세히</b>를 누르면 전체 설명이 나와요.' : '오른쪽 막대로 위치를 볼 수 있어요.'}`;
+  if ($('#bSwap')) $('#bSwap').onclick = () => { me = null; store.set('me', null); picks = []; show('sWho'); };
   renderTabs(); renderCards(); renderCore(); show('sVote'); $('#rail').classList.add('on'); updateRail();
 }
 function renderTabs() {
@@ -172,7 +181,7 @@ function renderCards() {
   paintSel(); buildRail(); paintNotes();
   if (visIO) { visIO.disconnect(); $$('.card').forEach(el => visIO.observe(el)); } else $$('.card').forEach(el => el.classList.add('vis'));
 }
-$('#bView').onclick = () => { view = view === 'grid' ? 'list' : 'grid'; store.set('view', view); renderCards(); buzz(8); toast(view === 'grid' ? '한눈에 보기: 30종을 작게 모아 봐요. 꾹 누르면 자세히!' : '자세히 보기로 바꿨어요'); };
+$('#bView').onclick = () => { view = view === 'grid' ? 'list' : 'grid'; store.set('view', view); renderCards(); buzz(8); toast(view === 'grid' ? `한눈에 보기: ${cands.length}종을 작게 모아 봐요. 꾹 누르면 자세히!` : '자세히 보기로 바꿨어요'); };
 // ── right rail: where am I (17/30), categories, my picks; drag to jump ──
 function buildRail() {
   const tr = $('#rtrack'); const cs = $$('.card'); tr.innerHTML = ''; if (!cs.length) return;
@@ -358,28 +367,28 @@ async function doSubmit() {
 
 // ───────── done ─────────
 function typeOf() { const cnt = {}; picks.forEach(n => { const k = byNo[n].area || byNo[n].cat; cnt[k] = (cnt[k] || 0) + 1; }); const s = Object.entries(cnt).sort((a, b) => b[1] - a[1]);
-  if (s.length > 1 && s[0][1] === s[1][1]) return { key: null, type: '올라운더형', desc: '분야를 가리지 않고 고르게 고른 선정위원', c: '#ffffff', ju: '글주임 패밀리' };
+  if (s.length > 1 && s[0][1] === s[1][1]) return { key: null, type: '올라운더형', desc: '분야를 가리지 않고 고르게 고른 분', c: '#ffffff', ju: '글주임 패밀리' };
   const k = s[0][0]; return { key: k, ...(LEG[k] || CAT[k]) }; }
 async function finish() {
   const T = typeOf();
-  $('#doneMsg').innerHTML = `${esc(me.name)} 파트너님 덕분에 중랑이 더 똑똑해져요!`;
+  $('#doneMsg').innerHTML = me.anon ? '함께 고른 AX10은 부서와 함께 만들어 배포해요. 고마워요!' : `${esc(me.name)} 파트너님 덕분에 중랑이 더 똑똑해져요!`;
   $('#typeBox').style.setProperty('--c', T.c);
-  $('#typeBox').innerHTML = `<small>나의 선정위원 유형</small><h3>${T.type}</h3><p>${T.desc} · 대표 캐릭터 ${T.ju}</p>`;
+  $('#typeBox').innerHTML = `<small>나의 AX 유형</small><h3>${T.type}</h3><p>${T.desc} · 대표 캐릭터 ${T.ju}</p>`;
   show('sDone'); buzz([15, 50, 15, 50, 40]);
   // move 3D hero into the done screen
   const st = $('#stage'); $('#doneStage').appendChild(st); window.dispatchEvent(new Event('resize'));
-  if (has3D) { try { G3D.applyVariant(0); G3D.smile(); G3D.say('파트너님, 고마워요!'); } catch (e) {} }
+  if (has3D) { try { G3D.applyVariant(0); G3D.smile(); G3D.say('함께해 줘서 고마워요!'); } catch (e) {} }
   if (fx.motion) for (let i = 0; i < 3; i++) setTimeout(() => { const b = document.createElement('div'); b.className = 'burst'; b.style.borderColor = ['#ffbf4a', '#22e6ff', '#ff4fd8'][i]; document.body.appendChild(b); setTimeout(() => b.remove(), 1300); }, i * 250);
   const url = await makeCard(T); $('#cardImg').src = url; $('#bSave').href = url;
   try { const blob = await (await fetch(url)).blob(); const file = new File([blob], 'AX10_나의선정카드.png', { type: 'image/png' });
     if (navigator.canShare && navigator.canShare({ files: [file] })) { const sh = $('#bShare'); sh.style.display = 'block';
-      sh.onclick = () => navigator.share({ files: [file], title: 'AX10 선정위원', text: `나는 ${T.type} 선정위원! #AX10 #중랑AX` }).catch(() => {}); } } catch (e) {}
+      sh.onclick = () => navigator.share({ files: [file], title: 'AX10 전 직원 투표', text: `나의 AX 유형은 ${T.type}! 나도 AX10 투표했어요 #AX10 #중랑AX` }).catch(() => {}); } } catch (e) {}
   checkResults();
 }
 function loadImg(src) { return new Promise(r => { const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = src; }); }
 async function makeCard(T) {
   try { await document.fonts.load('900 40px "Noto Sans KR"'); } catch (e) {}
-  const W = 1080, H = 1350, c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
+  const W = 1080, H = Math.max(1350, 720 + picks.length * 90), c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
   const F = (w, s) => `${w} ${s}px "Noto Sans KR", sans-serif`;
   const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#071a36'); bg.addColorStop(1, '#020812'); g.fillStyle = bg; g.fillRect(0, 0, W, H);
   g.strokeStyle = 'rgba(34,230,255,.07)'; g.lineWidth = 1; for (let x = 0; x < W; x += 48) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); } for (let y = 0; y < H; y += 48) { g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); }
@@ -387,9 +396,9 @@ async function makeCard(T) {
   const ch = await loadImg(img(0)); if (ch) g.drawImage(ch, 100, 150, 340, 340);
   g.strokeStyle = '#22e6ff'; g.lineWidth = 4; g.strokeRect(30, 30, W - 60, H - 60);
   const lgo = await loadImg('assets/logo.png'); if (lgo) { g.shadowColor = 'rgba(255,212,59,.8)'; g.shadowBlur = 24; g.drawImage(lgo, W - 210, 60, 140, 140); g.shadowBlur = 0; }
-  g.fillStyle = '#ffd43b'; g.font = F(900, 28); g.fillText('AI파트너스 · AX10 선정위원', 500, 140);
-  g.fillStyle = '#fff'; g.font = F(900, 92); g.fillText(me.name, 500, 250);
-  g.fillStyle = '#9fc6d8'; g.font = F(700, 34); g.fillText(me.dept, 500, 305);
+  g.fillStyle = '#ffd43b'; g.font = F(900, 28); g.fillText(me.anon ? '중랑구 · AX10 전 직원 투표' : 'AI파트너스 · AX10 선정위원', 500, 140);
+  g.fillStyle = '#fff'; g.font = F(900, me.anon ? 72 : 92); g.fillText(me.anon ? '나의 AX10 픽' : me.name, 470, 250);
+  g.fillStyle = '#9fc6d8'; g.font = F(700, 34); g.fillText(me.anon ? (() => { const d = new Date(); return `${d.getMonth() + 1}월 ${d.getDate()}일 투표 참여`; })() : me.dept, 500, 305);
   g.fillStyle = T.c; g.font = F(900, 50); g.fillText(T.type, 500, 395);
   g.fillStyle = '#d6ecf6'; g.font = F(500, 26); g.fillText(T.desc, 500, 440);
   g.fillStyle = '#ffbf4a'; g.font = F(900, 40); g.fillText(`내가 고른 AI 업무도구 ${picks.length}`, 80, 580);
@@ -410,23 +419,23 @@ async function checkResults() { const r = await rpc('ax_results', { p_round: ROU
 async function showResults() {
   const r = await checkResults(); if (!r || !r.public) { toast('결과는 마감 후 공개돼요'); return; }
   show('sRes'); const box = $('#resList'); box.innerHTML = '';
-  const items = r.items.slice(0, 20).reverse();
+  const items = r.items.slice(0, cands.length).reverse();
   for (let i = 0; i < items.length; i++) {
     const it = items[i], c = byNo[it.no]; const d = document.createElement('div'); d.className = 'rbar'; d.style.setProperty('--c', CAT[c.cat].c);
     d.innerHTML = `<div class="rk">${it.rank}</div><img src="${img(it.no)}" alt=""><div class="bar"><i></i><span>${esc(c.sub)}</span></div>`;
     box.prepend(d); await new Promise(res => setTimeout(res, fx.motion ? 160 : 0)); d.classList.add('on'); d.querySelector('i').style.width = Math.max(8, it.ratio) + '%'; buzz(5); blip(400 + i * 25, .04);
   }
-  const cut = document.createElement('div'); cut.className = 'cut'; cut.textContent = '— 여기까지 2차 전 직원 투표에 올라가요 —'; box.appendChild(cut);
-  const wrap = document.createElement('div'); wrap.className = 'posterbox'; wrap.innerHTML = '<h3>결과 포스터</h3><p>결과를 한 장으로 정리했어요. 저장하거나 카톡으로 나눠 주세요.</p><img id="resPoster" alt="AX30 → 20 결과 포스터"><div class="row2"><a class="btn gold" id="resSave" download="AX30_20_결과포스터.png" style="text-align:center;text-decoration:none;font-size:16px;padding:14px">포스터 저장</a><button class="btn ghost" id="resShare">공유하기</button></div>';
+  const cut = document.createElement('div'); cut.className = 'cut'; cut.textContent = '— 여기까지 AX10 —'; const rows = box.querySelectorAll('.rbar'); if (rows[10]) box.insertBefore(cut, rows[10]); else box.appendChild(cut);
+  const wrap = document.createElement('div'); wrap.className = 'posterbox'; wrap.innerHTML = '<h3>결과 포스터</h3><p>결과를 한 장으로 정리했어요. 저장하거나 카톡으로 나눠 주세요.</p><img id="resPoster" alt="AX20 → 10 결과 포스터"><div class="row2"><a class="btn gold" id="resSave" download="AX20_10_결과포스터.png" style="text-align:center;text-decoration:none;font-size:16px;padding:14px">포스터 저장</a><button class="btn ghost" id="resShare">공유하기</button></div>';
   box.appendChild(wrap);
   const url = await makeResultPoster(r); $('#resPoster').src = url; $('#resSave').href = url;
-  $('#resShare').onclick = async () => { try { const blob = await (await fetch(url)).blob(); const f = new File([blob], 'AX30_20_결과포스터.png', { type: 'image/png' }); if (navigator.canShare && navigator.canShare({ files: [f] })) await navigator.share({ files: [f], title: 'AX30 → 20 결과' }); else toast('이 기기에서는 공유가 안 돼요. 포스터를 길게 눌러 저장해 주세요'); } catch (e) {} };
+  $('#resShare').onclick = async () => { try { const blob = await (await fetch(url)).blob(); const f = new File([blob], 'AX20_10_결과포스터.png', { type: 'image/png' }); if (navigator.canShare && navigator.canShare({ files: [f] })) await navigator.share({ files: [f], title: 'AX20 → 10 결과' }); else toast('이 기기에서는 공유가 안 돼요. 포스터를 길게 눌러 저장해 주세요'); } catch (e) {} };
   if (fx.motion) { const b = document.createElement('div'); b.className = 'burst'; document.body.appendChild(b); setTimeout(() => b.remove(), 1300); }
   buzz([20, 40, 60]);
 }
 async function makeResultPoster(r) {
   try { await document.fonts.load('900 40px "Noto Sans KR"'); } catch (e) {}
-  const top = r.items.slice(0, 20); const W = 1080;
+  const top = r.items.slice(0, 10); const W = 1080;
   const cm = (r.comments || []).slice(0, 6);
   const H = 640 + top.length * 86 + 120 + 360 + (cm.length ? 120 + cm.length * 70 : 0) + 330;
   const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
@@ -438,11 +447,11 @@ async function makeResultPoster(r) {
   // holo ring + character
   g.save(); g.translate(W / 2, 235); for (let k = 0; k < 7; k++) { const rr = 118 + k * 19; g.strokeStyle = `rgba(255,191,74,${.35 + (k % 2) * .35})`; g.lineWidth = 2 + (k % 3) * 2; g.setLineDash([12 + k * 7, 10 + k * 3]); g.beginPath(); g.arc(0, 0, rr, k * .7, k * .7 + 4.4); g.stroke(); } g.restore(); g.setLineDash([]);
   const ch = await loadImg(img(0)); if (ch) g.drawImage(ch, W / 2 - 140, 95, 280, 280);
-  const lgo = await loadImg('assets/logo.png'); if (lgo) { g.shadowColor = 'rgba(255,212,59,.8)'; g.shadowBlur = 22; g.drawImage(lgo, 60, 40, 120, 120); g.shadowBlur = 0; g.fillStyle = '#ffd43b'; g.font = F(900, 30); g.fillText('AI파트너스', 196, 100); g.fillStyle = '#22e6ff'; g.font = F(700, 18); g.fillText('JUNGNANG AI PARTNERS', 196, 130); }
+  const lgo = await loadImg('assets/logo.png'); if (lgo) { g.shadowColor = 'rgba(255,212,59,.8)'; g.shadowBlur = 22; g.drawImage(lgo, 60, 40, 120, 120); g.shadowBlur = 0; g.fillStyle = '#ffd43b'; g.font = F(900, 30); g.fillText('중랑구 AX10', 196, 100); g.fillStyle = '#22e6ff'; g.font = F(700, 18); g.fillText('ALL STAFF VOTE', 196, 130); }
   g.textAlign = 'center';
-  const tg = g.createLinearGradient(0, 430, 0, 520); tg.addColorStop(0, '#ffffff'); tg.addColorStop(1, '#22b8ff'); g.fillStyle = tg; g.shadowColor = 'rgba(34,230,255,.8)'; g.shadowBlur = 24; g.font = F(900, 96); g.fillText('AX30 → 20', W / 2, 510); g.shadowBlur = 0;
-  g.fillStyle = '#fff'; g.font = F(900, 44); g.fillText('AI파트너스가 고른 20종', W / 2, 575);
-  g.fillStyle = '#9fc6d8'; g.font = F(500, 24); const d0 = new Date(r.closes_at); g.fillText(`투표 ${r.closed ? '결과' : '중간 결과'} · ${d0.getMonth() + 1}. ${d0.getDate()}. 마감 · 1인 최대 ${r.max_pick || 7}개`, W / 2, 615);
+  const tg = g.createLinearGradient(0, 430, 0, 520); tg.addColorStop(0, '#ffffff'); tg.addColorStop(1, '#22b8ff'); g.fillStyle = tg; g.shadowColor = 'rgba(34,230,255,.8)'; g.shadowBlur = 24; g.font = F(900, 96); g.fillText('AX20 → 10', W / 2, 510); g.shadowBlur = 0;
+  g.fillStyle = '#fff'; g.font = F(900, 44); g.fillText('전 직원이 고른 AX10', W / 2, 575);
+  g.fillStyle = '#9fc6d8'; g.font = F(500, 24); const d0 = new Date(r.closes_at); g.fillText(`투표 ${r.closed ? '결과' : '중간 결과'} · ${d0.getMonth() + 1}. ${d0.getDate()}. 마감 · 1인 최대 ${r.max_pick || 10}개 · 익명`, W / 2, 615);
   g.textAlign = 'left';
   let y = 650;
   for (let i = 0; i < top.length; i++) { const it = top[i], cc = byNo[it.no] || {}, col = (CAT[cc.cat] || {}).c || '#22e6ff';
@@ -461,42 +470,43 @@ async function makeResultPoster(r) {
     g.textAlign = 'center'; g.fillStyle = CAT[k].c; g.font = F(800, 24); g.fillText(CAT[k].name, x + bw4 / 2, y + 40); g.fillStyle = '#fff'; g.font = F(900, 50); g.fillText(`${n}`, x + bw4 / 2 - 20, y + 105); g.fillStyle = '#9fc6d8'; g.font = F(700, 24); g.fillText(`/${all}`, x + bw4 / 2 + 30, y + 105); g.textAlign = 'left'; });
   y += 170;
   // 유형 비율
-  g.fillStyle = '#ffbf4a'; g.font = F(900, 38); g.fillText('선정위원 유형', 80, y + 20); y += 46;
+  g.fillStyle = '#ffbf4a'; g.font = F(900, 38); g.fillText('참여자 유형', 80, y + 20); y += 46;
   const T = { ...LEG, ...CAT, all: { type: '올라운더형', c: '#ffffff' } };
   const ents = Object.entries(r.types || {}).sort((p, q) => q[1] - p[1]).slice(0, 5);
   ents.forEach(([k, v]) => { const tt = T[k] || T.all; g.fillStyle = '#d6ecf6'; g.font = F(800, 26); g.fillText(tt.type, 80, y + 30); g.fillStyle = 'rgba(255,255,255,.08)'; roundRect(g, 300, y + 8, W - 460, 30, 15); g.fill(); g.fillStyle = tt.c; roundRect(g, 300, y + 8, Math.max(20, (W - 460) * v / 100), 30, 15); g.fill(); g.fillStyle = '#fff'; g.font = F(900, 26); g.fillText(v + '%', W - 145, y + 32); y += 50; });
   y += 30;
-  if (cm.length) { g.fillStyle = '#ffbf4a'; g.font = F(900, 38); g.fillText('선정위원 한마디', 80, y + 20); y += 50;
+  if (cm.length) { g.fillStyle = '#ffbf4a'; g.font = F(900, 38); g.fillText('직원 한마디', 80, y + 20); y += 50;
     cm.forEach(t => { g.fillStyle = '#fff'; roundRect(g, 80, y, W - 160, 56, 16); g.fill(); g.fillStyle = '#1f1f24'; g.font = F(700, 25); const s = '“' + (t.length > 34 ? t.slice(0, 33) + '…' : t) + '”'; g.fillText(s, 104, y + 37); y += 70; }); y += 20; }
   // next
   g.fillStyle = 'rgba(34,230,255,.12)'; roundRect(g, 70, y, W - 140, 150, 22); g.fill(); g.strokeStyle = '#22e6ff'; g.lineWidth = 2; roundRect(g, 70, y, W - 140, 150, 22); g.stroke();
-  g.textAlign = 'center'; g.fillStyle = '#fff'; g.font = F(900, 36); g.fillText('다음은 전 직원 투표! 20종 → AX10', W / 2, y + 62); g.fillStyle = '#ffbf4a'; g.font = F(800, 30); g.fillText('’26. 11. 24.(화) ~ 27.(금)', W / 2, y + 112);
-  g.fillStyle = '#7fa3b6'; g.font = F(700, 22); g.fillText('AI파트너스 · 중랑구 기획예산과 중랑AI혁신팀 · #AX10 #중랑AX', W / 2, H - 40); g.textAlign = 'left';
+  g.textAlign = 'center'; g.fillStyle = '#fff'; g.font = F(900, 36); g.fillText('다음은 부서와 함께 만들기! AX10 구축·배포', W / 2, y + 62); g.fillStyle = '#ffbf4a'; g.font = F(800, 30); g.fillText('’26. 12. ~ ’27. 1. 8.', W / 2, y + 112);
+  g.fillStyle = '#7fa3b6'; g.font = F(700, 22); g.fillText('중랑구 기획예산과 중랑AI혁신팀 · #AX10 #중랑AX', W / 2, H - 40); g.textAlign = 'left';
   return c.toDataURL('image/png');
 }
 function roundRect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
 $('#bResults').onclick = showResults; $('#bResults2').onclick = showResults;
 $('#bBack1').onclick = () => show('sCover'); $('#bBack2').onclick = () => show('sCover');
-$('#bStart').onclick = () => { buzz(10); blip(600); show('sWho'); setTimeout(() => $('#q').focus(), 300); };
+$('#bStart').onclick = () => { buzz(10); blip(600); if (ANON) { choose(anonMe()); return; } show('sWho'); setTimeout(() => $('#q').focus(), 300); };
 
 // ───────── init ─────────
 (async function init() {
   $('#bStart').disabled = true; $('#count').textContent = '투표 정보를 불러오는 중…';
-  if (DEMO) $('#demoTag').innerHTML = '<span class="demo">미리보기 모드 · 예시 명단(김하늘, 이바다 등)으로 시험해 보세요</span>';
+  if (DEMO) $('#demoTag').innerHTML = '<span class="demo">미리보기 모드 · 여기서 고른 내용은 이 브라우저에만 저장돼요</span>';
   try {
-    const cj = await fetch('assets/candidates.json?v=pilot1').then(r => r.json()).catch(() => null);
+    const cj = await fetch('assets/candidates.json?v=r2a').then(r => r.json()).catch(() => null);
     if (DEMO) Demo.setCands(cj || []);
     info = await rpc('ax_round_info', { p_round: ROUND });
     cands = (DEMO ? cj : await rpc('ax_candidates', { p_round: ROUND })) || [];
     if (!DEMO && cj) cands = cands.map(c => { const j = cj.find(x => x.no === c.no) || {}; return Object.assign({}, j, c, j.cat ? { cat: j.cat, area: j.area || c.cat } : {}); });
   } catch (e) { toast('투표 정보를 불러오지 못했어요. 새로고침해 주세요.', 4000); return; }
-  if (!info) { toast('투표 설정을 찾지 못했어요.'); return; }
+  if (!info) { $('#count').innerHTML = '<b>2차 투표를 준비하고 있어요.</b> 곧 열려요!'; return; }
+  ANON = !!info.anon;
   byNo = Object.fromEntries(cands.map(c => [c.no, c])); MAX = info.max_pick || 7; $('#maxTxt').textContent = MAX;
   serverSkew = info.now ? new Date(info.now).getTime() - Date.now() : 0;
   $('#period').textContent = fmtDate(info.closes_at); $('#bStart').disabled = false; tick(); setInterval(tick, 1000);
-  const depts = await rpc('ax_depts', { p_round: ROUND }).catch(() => []); (depts || []).forEach(d => { const o = document.createElement('option'); o.value = o.textContent = d.dept; $('#dept').appendChild(o); });
+  const depts = ANON ? [] : await rpc('ax_depts', { p_round: ROUND }).catch(() => []); (depts || []).forEach(d => { const o = document.createElement('option'); o.value = o.textContent = d.dept; $('#dept').appendChild(o); });
   const saved = store.get('me', null);
-  if (saved) { const b = $('#bResume'); b.style.display = 'block'; b.textContent = `${saved.name} 선정위원으로 이어서 하기`; b.onclick = () => choose(saved); }
+  if (saved && !ANON && !saved.anon) { const b = $('#bResume'); b.style.display = 'block'; b.textContent = `${saved.name} 선정위원으로 이어서 하기`; b.onclick = () => choose(saved); }
   checkResults(); mountHero();
   try { history.replaceState(null, '', '#start'); } catch (e) {}
 })();

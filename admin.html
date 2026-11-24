@@ -111,6 +111,11 @@ tr.cutline td{border-bottom:3px dashed var(--gd)}
   .paper{padding:22px 16px}
   .rep .bar2 .sbtn{flex:1 1 40%}
 }
+body.anon .nonanon{display:none!important}
+.daily{display:flex;gap:10px;align-items:flex-end;min-height:150px;overflow-x:auto;padding:6px 2px}
+.dcol{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:42px}
+.dcol i{display:block;width:28px;border-radius:8px 8px 3px 3px;background:linear-gradient(#ffbf4a,#22e6ff)}
+.dcol b{font-size:13px;color:#fff}.dcol span{font-size:11px;color:var(--mut)}
 </style>
 </head>
 <body>
@@ -136,38 +141,39 @@ tr.cutline td{border-bottom:3px dashed var(--gd)}
       <button class="sbtn gold" id="bReport">결과보고서</button>
     </header>
 
-    <nav class="mtabs" id="mtabs"><button data-mt="now" class="on">참여</button><button data-mt="tally">득표·의견</button><button data-mt="roster">명단</button><button data-mt="set">기간·설정</button></nav>
+    <nav class="mtabs" id="mtabs"><button data-mt="now" class="on">참여</button><button data-mt="tally">득표·의견</button><button data-mt="set">기간·설정</button></nav>
     <div data-t="now" class="kpis">
       <div class="kpi"><b id="kV">0</b><span>투표한 사람</span></div>
-      <div class="kpi"><b id="kT">0</b><span>전체 선정위원</span></div>
+      <div class="kpi"><b id="kT">0</b><span>전 직원(목표)</span></div>
       <div class="kpi"><b id="kP">0%</b><span>참여율</span></div>
       <div class="kpi"><b id="kD">-</b><span>마감까지</span></div>
     </div>
 
-    <div data-t="now" class="box"><h2>참여 좌석</h2><div class="hint">불 켜진 칸이 투표한 사람이에요. 칸에 마우스를 올리면 이름이 보여요.</div><div class="seats" id="seats"></div></div>
+    <div data-t="now" class="box"><h2>날짜별 참여</h2><div class="hint">하루에 새로 투표한 사람 수예요(익명).</div><div class="seats" id="seats"></div></div>
 
     <div class="grid">
-      <div data-t="now" class="box"><h2>아직 안 한 사람</h2><div class="list" id="notYet"></div>
+      <div data-t="now" class="box"><h2>참여 현황</h2><div class="list" id="notYet"></div>
         <h2 style="margin-top:14px">독려 문구</h2><textarea id="nudge"></textarea>
         <div class="row" style="margin-top:8px"><button class="sbtn" id="bCopy">문구 복사</button></div></div>
-      <div data-t="now" class="box"><h2>투표한 사람</h2><div class="hint">시험 표나 잘못된 표는 '초기화'를 두 번 눌러 지워요. 그 사람은 다시 투표할 수 있어요.</div><div class="list" id="voted"></div>
+      <div data-t="now" class="box nonanon"><h2>투표한 사람</h2><div class="hint">시험 표나 잘못된 표는 '초기화'를 두 번 눌러 지워요. 그 사람은 다시 투표할 수 있어요.</div><div class="list" id="voted"></div>
         <h2 style="margin-top:14px">같은 휴대폰으로 여러 명</h2><div class="list" id="dup"></div></div>
     </div>
 
     <div class="grid">
-      <div data-t="tally" class="box"><h2>득표 현황</h2><div class="hint">노란 점선 아래가 21위부터예요. 20위 동점은 혁신팀이 정해요.</div><table id="tally"></table>
+      <div data-t="tally" class="box"><h2>득표 현황</h2><div class="hint">노란 점선 아래가 11위부터예요. 10위 동점은 혁신팀이 정해요.</div><table id="tally"></table>
         <div class="row" style="margin-top:10px"><button class="sbtn ghost" id="bCsv">엑셀용 CSV 복사</button></div></div>
       <div>
         <div data-t="set" class="box"><h2>투표 기간·공개</h2>
-          <div class="row"><input type="datetime-local" id="closes"><button class="sbtn ghost" id="bCloses">마감 시각 바꾸기</button></div>
+          <div class="row"><input type="datetime-local" id="opens"><button class="sbtn ghost" id="bOpens">시작 시각 바꾸기</button></div>
+          <div class="row" style="margin-top:8px"><input type="datetime-local" id="closes"><button class="sbtn ghost" id="bCloses">마감 시각 바꾸기</button></div>
           <div class="row" style="margin-top:10px"><button class="sbtn ghost" id="bCloseNow">지금 마감</button><button class="sbtn ghost" id="bPub">비공개 · 누르면 공개</button></div>
-          <div class="hint" style="margin-top:10px">공개하면 투표 사이트에서 모두가 결과 포스터(순위·비율, 표 수와 이름은 비공개)를 볼 수 있어요.</div></div>
+          <div class="hint" style="margin-top:10px">공개하면 투표 사이트에서 모두가 결과 포스터(순위·비율, 표 수는 비공개)를 볼 수 있어요.</div></div>
         <div data-t="tally" class="box"><h2>한 줄 의견</h2><div class="list" id="cmts"></div></div>
-        <div data-t="tally" class="box"><h2>후보별 의견·중요도</h2><div class="hint">선정위원이 후보마다 남긴 별점(1~5)과 의견이에요.</div><div class="list" id="notes">아직 없어요</div></div>
+        <div data-t="tally" class="box"><h2>후보별 의견·중요도</h2><div class="hint">직원들이 후보마다 남긴 별점(1~5)과 의견이에요(익명).</div><div class="list" id="notes">아직 없어요</div></div>
       </div>
     </div>
 
-    <div data-t="roster" class="box" id="rosterBox"><h2>명단 관리 · <span id="rosterN">0</span>명</h2>
+    <div data-t="roster" class="box nonanon" id="rosterBox"><h2>명단 관리 · <span id="rosterN">0</span>명</h2>
       <div class="hint">한 명씩 더하거나 빼요. 투표한 사람(✓)을 빼면 그 표도 함께 지워져요.</div>
       <div class="row"><input id="aDept" list="deptList" placeholder="부서 (예: 기획예산과)" size="16"><datalist id="deptList"></datalist><input id="aName" placeholder="이름" size="8"><button class="sbtn" id="bAdd">한 명 더하기</button></div>
       <div id="roster" class="roster"></div>
@@ -177,7 +183,7 @@ tr.cutline td{border-bottom:3px dashed var(--gd)}
       <div class="list" id="upPrev" style="margin-top:8px;font-size:13px"></div>
     </div>
 
-    <div data-t="set" class="box"><h2>2차 투표 만들기 (1차가 끝난 뒤)</h2><div class="hint">1차 상위 후보로 전 직원 투표 회차를 새로 만들어요. 만든 뒤 config.js의 round 값을 새 회차 이름으로 바꾸면 사이트가 2차로 바뀌어요.</div>
+    <div data-t="set" class="box nonanon" style="display:none"><h2>2차 투표 만들기 (1차가 끝난 뒤)</h2><div class="hint">1차 상위 후보로 전 직원 투표 회차를 새로 만들어요. 만든 뒤 config.js의 round 값을 새 회차 이름으로 바꾸면 사이트가 2차로 바뀌어요.</div>
       <div class="row">
         <label>회차 이름 <input id="pNew" value="ax20-2" size="8"></label>
         <label>상위 <input id="pTop" type="number" value="20" style="width:70px">종</label>
@@ -203,9 +209,9 @@ tr.cutline td{border-bottom:3px dashed var(--gd)}
   <textarea id="rText"></textarea>
 </div>
 
-<script src="assets/config.js?v=pilot2"></script>
+<script src="assets/config.js?v=r2a"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="assets/poster.js?v=pilot2"></script>
-<script src="assets/admin.js?v=pilot2"></script>
+<script src="assets/poster.js?v=r2a"></script>
+<script src="assets/admin.js?v=r2a"></script>
 </body>
 </html>

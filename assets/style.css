@@ -376,3 +376,12 @@ body.nomo .pilot .on:before{animation:none}
 .inav span{font-size:13px;font-weight:800;color:var(--mut)}
 .inav button{font-size:14px;font-weight:800;color:var(--cy);border:1.5px solid rgba(34,230,255,.45);border-radius:999px;padding:6px 12px}
 .inav button:disabled{opacity:.3}
+
+/* ── 2차: 지금까지 온 길 ── */
+.story{list-style:none;display:flex;align-items:stretch;gap:6px;margin:10px auto 4px;padding:0;max-width:440px}
+.story li{flex:1;position:relative;text-align:center;padding:8px 2px 7px;border:1px solid rgba(34,230,255,.28);border-radius:12px;background:rgba(10,30,60,.55)}
+.story li+li::before{content:'›';position:absolute;left:-7px;top:50%;transform:translateY(-55%);color:#22e6ff;font-weight:900;font-size:15px}
+.story b{display:block;font-size:20px;font-weight:900;color:#fff;line-height:1.1}
+.story span{display:block;font-size:10.5px;color:#9fc6d8;line-height:1.3;margin-top:3px;word-break:keep-all}
+.story li.now{border-color:#ffbf4a;background:rgba(60,40,8,.55);box-shadow:0 0 14px rgba(255,191,74,.35)}
+.story li.now b{color:#ffbf4a}

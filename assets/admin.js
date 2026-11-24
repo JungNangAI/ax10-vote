@@ -1,5 +1,5 @@
 (() => {
-const CFG = window.AX_CONFIG || {}; const ROUND = CFG.round || 'ax30-1'; const DEMO = !(CFG.supabaseUrl && CFG.supabaseKey);
+const CFG = window.AX_CONFIG || {}; const ROUND = CFG.round || 'ax30-1'; const DEMO = !(CFG.supabaseUrl && CFG.supabaseKey) || /[?&]demo\b/.test(location.search); const TARGET = CFG.target || 1800;
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const CATC = { L: '#ff4fd8', O: '#22e6ff' };
@@ -9,19 +9,21 @@ const sb = DEMO ? null : { rpc: sbRpc };
 let KEY = ''; try { KEY = sessionStorage.getItem('ax10_admin') || ''; } catch (e) {}
 let cands = [];
 // demo backend shares the voting page's demo store in this browser
-const ds = () => { try { return JSON.parse(localStorage.getItem('ax10_demo')) || { members: [], votes: {}, pub: false, closes: '2026-11-23T18:00:00+09:00' }; } catch (e) { return { members: [], votes: {}, pub: false, closes: '2026-11-23T18:00:00+09:00' }; } };
-const dsave = d => { try { localStorage.setItem('ax10_demo', JSON.stringify(d)); } catch (e) {} };
+const ds = () => { try { return JSON.parse(localStorage.getItem('ax20_demo')) || { members: [], votes: {}, pub: false, closes: '2026-12-02T18:00:00+09:00' }; } catch (e) { return { members: [], votes: {}, pub: false, closes: '2026-12-02T18:00:00+09:00' }; } };
+const dsave = d => { try { localStorage.setItem('ax20_demo', JSON.stringify(d)); } catch (e) {} };
 const Demo = {
-  ax_admin_overview: () => { const d = ds(); const t = {}; cands.forEach(c => t[c.no] = 0); Object.values(d.votes).forEach(v => v.picks.forEach(n => t[n]++));
-    return { ok: true, round: { closes_at: d.closes, opens_at: '2026-11-20T15:00:00+09:00', results_public: d.pub, max_pick: 7, now: new Date().toISOString() }, ballots: Object.values(d.votes).map(v => v.picks),
-      members: d.members.map(m => ({ ...m, voted: !!d.votes[m.id], at: d.votes[m.id]?.updated_at, device: d.votes[m.id]?.device })),
+  ax_admin_overview: () => { const d = ds(); const t = {}; cands.forEach(c => t[c.no] = 0); const vs = Object.values(d.votes); vs.forEach(v => v.picks.forEach(n => { if (n in t) t[n]++; }));
+    const dd = {}; vs.forEach(v => { const x = new Date(v.created_at || v.updated_at); const k = `${String(x.getMonth() + 1).padStart(2, '0')}.${String(x.getDate()).padStart(2, '0')}`; dd[k] = (dd[k] || 0) + 1; });
+    const today = new Date().toDateString();
+    return { ok: true, round: { closes_at: d.closes, opens_at: d.opens || '2026-11-25T09:00:00+09:00', results_public: d.pub, max_pick: 10, anon: true, now: new Date().toISOString() }, ballots: vs.map(v => v.picks), members: [],
+      participants: vs.length, today: vs.filter(v => new Date(v.created_at || v.updated_at).toDateString() === today).length, daily: Object.entries(dd).sort().map(([k, n]) => ({ d: k, n })),
       tally: cands.map(c => ({ no: c.no, sub: c.sub, cat: c.cat, votes: t[c.no] })).sort((a, b) => b.votes - a.votes || a.no - b.no),
-      comments: d.members.filter(m => d.votes[m.id]?.comment).map(m => ({ dept: m.dept, name: m.name, comment: d.votes[m.id].comment, picks: d.votes[m.id].picks })) }; },
-  ax_admin_set: ({ p_closes, p_public }) => { const d = ds(); if (p_closes) d.closes = p_closes; if (p_public != null) d.pub = p_public; dsave(d); return { ok: true }; },
+      comments: vs.filter(v => v.comment).map(v => ({ dept: '', name: '익명', comment: v.comment, picks: v.picks })) }; },
+  ax_admin_set: ({ p_closes, p_opens, p_public }) => { const d = ds(); if (p_closes) d.closes = p_closes; if (p_opens) d.opens = p_opens; if (p_public != null) d.pub = p_public; dsave(d); return { ok: true }; },
   ax_admin_members: ({ p_list }) => { const d = ds(); let n = 0; p_list.forEach(e => { if (!d.members.some(m => m.dept === e.dept && m.name === e.name)) { d.members.push({ id: 'u' + Date.now() + n, dept: e.dept, name: e.name }); n++; } }); dsave(d); return { ok: true, added: n }; },
   ax_admin_promote: () => ({ ok: true }),
   ax_admin_member_del: ({ p_member }) => { const d = ds(); const n = d.members.length; d.members = d.members.filter(m => m.id !== p_member); delete d.votes[p_member]; dsave(d); return { ok: d.members.length < n }; },
-  ax_admin_notes: () => { const d = ds(); const m = {}; Object.entries(d.notes || {}).forEach(([mid, ns]) => { const mem = d.members.find(x => x.id === mid) || {}; Object.entries(ns).forEach(([no, v]) => { const o = m[no] = m[no] || { no: +no, sum: 0, cnt: 0, comments: [] }; if (v.score) { o.sum += v.score; o.cnt++; } if (v.comment) o.comments.push({ comment: v.comment, name: mem.name, dept: mem.dept, score: v.score }); }); });
+  ax_admin_notes: () => { const d = ds(); const m = {}; Object.entries(d.notes || {}).forEach(([mid, ns]) => { const mem = d.members.find(x => x.id === mid) || { name: '익명', dept: '' }; Object.entries(ns).forEach(([no, v]) => { const o = m[no] = m[no] || { no: +no, sum: 0, cnt: 0, comments: [] }; if (v.score) { o.sum += v.score; o.cnt++; } if (v.comment) o.comments.push({ comment: v.comment, name: mem.name, dept: mem.dept, score: v.score }); }); });
     return { ok: true, items: Object.values(m).map(o => ({ ...o, avg: o.cnt ? Math.round(o.sum / o.cnt * 10) / 10 : null })) }; },
   ax_admin_reset: ({ p_member }) => { const d = ds(); delete d.votes[p_member]; dsave(d); return { ok: true }; } };
 async function rpc(fn, args) { if (DEMO) return Demo[fn](args); const { data, error } = await sb.rpc(fn, args); if (error) throw error; return data; }
@@ -33,9 +35,16 @@ async function load() {
   if (!ov || !ov.ok) { toast('관리 열쇠가 맞지 않아요'); $('#login').style.display = 'block'; $('#main').style.display = 'none'; return; }
   try { sessionStorage.setItem('ax10_admin', KEY); } catch (e) {}
   $('#login').style.display = 'none'; $('#main').style.display = 'block';
-  const ms = ov.members, v = ms.filter(m => m.voted).length;
-  $('#kV').textContent = v; $('#kT').textContent = ms.length; $('#kP').textContent = ms.length ? Math.round(v / ms.length * 100) + '%' : '0%';
+  const ANON = !!ov.round.anon; document.body.classList.toggle('anon', ANON);
+  const ms = ov.members, v = ANON ? (ov.participants || 0) : ms.filter(m => m.voted).length, tot = ANON ? TARGET : ms.length;
+  $('#kV').textContent = v.toLocaleString(); $('#kT').textContent = tot.toLocaleString(); $('#kP').textContent = tot ? (v / tot * 100).toFixed(ANON ? 1 : 0) + '%' : '0%';
   const left = new Date(ov.round.closes_at) - Date.now(); $('#kD').textContent = left > 0 ? `${Math.floor(left / 864e5)}일 ${Math.floor(left % 864e5 / 36e5)}시간` : '마감';
+  if (ANON) {
+    const dl = ov.daily || [], mx = Math.max(1, ...dl.map(x => x.n));
+    $('#seats').innerHTML = dl.length ? `<div class="daily">${dl.map(x => `<div class="dcol"><b>${x.n}</b><i style="height:${Math.max(4, Math.round(x.n / mx * 120))}px"></i><span>${esc(x.d)}</span></div>`).join('')}</div>` : '<div class="hint">아직 참여가 없어요</div>';
+    $('#notYet').innerHTML = `오늘 <b>${(ov.today || 0).toLocaleString()}명</b> 새로 참여 · 누적 <b>${v.toLocaleString()}명</b><br><span style="color:var(--mut)">익명 투표라 누가 했는지는 알 수 없어요. 한 휴대폰(브라우저)에 한 표예요.</span>`;
+    $('#nudge').value = `[AX10 전 직원 투표 안내]\n우리 구에 꼭 필요한 AI 업무도구 10종(AX10)을 전 직원이 함께 고르고 있어요.\nAI파트너스가 고른 20종 중 최대 ${ov.round.max_pick || 10}개를 골라 주세요. 이름 없이 익명, 3분이면 끝나요.\n▶ 투표하기: https://jungnangai.github.io/ax10-vote/\n(마감 ${new Date(ov.round.closes_at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', weekday: 'short', hour: 'numeric' })})\n문의: 기획예산과 중랑AI혁신팀 ☎2837`;
+  } else {
   $('#seats').innerHTML = ms.map(m => `<div class="seat ${m.voted ? 'on' : ''}" title="${esc(m.dept)} ${esc(m.name)}${m.voted ? ' · 투표함' : ''}"></div>`).join('');
   const not = ms.filter(m => !m.voted);
   $('#notYet').innerHTML = not.length ? not.map(m => `${esc(m.name)} <span style="color:var(--mut)">(${esc(m.dept)})</span>`).join(' · ') : '모두 투표했어요!';
@@ -47,17 +56,19 @@ async function load() {
   const devs = {}; ms.filter(m => m.device).forEach(m => (devs[m.device] = devs[m.device] || []).push(m));
   const dups = Object.values(devs).filter(a => a.length > 1);
   $('#dup').innerHTML = dups.length ? dups.map(a => a.map(m => `${esc(m.name)}(${esc(m.dept)})`).join(', ')).join('<br>') : '없음';
+  }
   nmap = {}; try { const nr = await rpc('ax_admin_notes', { p_round: ROUND, p_key: KEY }); if (nr && nr.ok) nr.items.forEach(x => nmap[x.no] = x); } catch (e) {}
   $('#tally').innerHTML = '<tr><th>순위</th><th>번호</th><th>후보</th><th>표</th><th>중요도</th></tr>' + ov.tally.map((t, i) => {
     const rank = ov.tally.findIndex(x => x.votes === t.votes) + 1;
-    return `<tr class="${i === 19 ? 'cutline' : ''}"><td>${rank}</td><td><span class="pill" style="background:${CATC[t.cat]}">${t.no}</span></td><td>${esc(t.sub)}</td><td><b>${t.votes}</b></td><td>${nmap[t.no] && nmap[t.no].avg ? '★' + nmap[t.no].avg + ` <span style="color:var(--mut);font-size:12px">(${nmap[t.no].cnt})</span>` : '-'}</td></tr>`; }).join('');
+    return `<tr class="${i === (ANON ? 9 : 19) ? 'cutline' : ''}"><td>${rank}</td><td><span class="pill" style="background:${CATC[t.cat]}">${t.no}</span></td><td>${esc(t.sub)}</td><td><b>${t.votes}</b></td><td>${nmap[t.no] && nmap[t.no].avg ? '★' + nmap[t.no].avg + ` <span style="color:var(--mut);font-size:12px">(${nmap[t.no].cnt})</span>` : '-'}</td></tr>`; }).join('');
   const withC = Object.values(nmap).filter(x => x.comments && x.comments.length).sort((p, q) => p.no - q.no);
   $('#notes').innerHTML = withC.length ? withC.map(x => { const c = cands.find(k => k.no === x.no) || {}; return `<div style="margin-bottom:10px"><b>${x.no}. ${esc(c.sub || '')}</b> ${x.avg ? `<span style="color:var(--gd)">★${x.avg}</span>` : ''}${x.comments.map(m => `<div style="padding-left:10px">“${esc(m.comment)}” <span style="color:var(--mut)">— ${esc(m.name || '')}, ${esc(m.dept || '')}${m.score ? ' · ★' + m.score : ''}</span></div>`).join('')}</div>`; }).join('') : '아직 없어요';
   $('#cmts').innerHTML = ov.comments.length ? ov.comments.map(c => `<div>“${esc(c.comment)}” <span style="color:var(--mut)">— ${esc(c.name)}, ${esc(c.dept)}</span></div>`).join('') : '아직 없어요';
-  renderRoster();
+  if (!ANON) renderRoster();
   const pub = !!ov.round.results_public; $('#bPub').textContent = pub ? '공개 중 · 누르면 숨김' : '비공개 · 누르면 공개'; $('#bPub').className = 'sbtn' + (pub ? ' gold' : ' ghost');
   const d = new Date(ov.round.closes_at); const p = n => String(n).padStart(2, '0');
   $('#closes').value = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+  const o = new Date(ov.round.opens_at); if ($('#opens')) $('#opens').value = `${o.getFullYear()}-${p(o.getMonth() + 1)}-${p(o.getDate())}T${p(o.getHours())}:${p(o.getMinutes())}`;
   clearTimeout(timer); timer = setTimeout(load, 30000);
 }
 $('#bLogin').onclick = () => { KEY = $('#key').value.trim(); if (!KEY) return toast('관리 열쇠를 넣어 주세요'); load(); };
@@ -65,6 +76,7 @@ $('#key').onkeydown = e => { if (e.key === 'Enter') $('#bLogin').click(); };
 $('#bRefresh').onclick = load;
 $('#bCopy').onclick = async () => { try { await navigator.clipboard.writeText($('#nudge').value); toast('복사했어요. 카톡에 붙여 넣으세요'); } catch (e) { $('#nudge').select(); toast('문구를 선택했어요. 길게 눌러 복사해 주세요'); } };
 $('#bCloses').onclick = async () => { const v = $('#closes').value; if (!v) return; await rpc('ax_admin_set', { p_round: ROUND, p_key: KEY, p_closes: new Date(v).toISOString(), p_opens: null, p_public: null }); toast('마감 시각을 바꿨어요'); load(); };
+if ($('#bOpens')) $('#bOpens').onclick = async () => { const v = $('#opens').value; if (!v) return; await rpc('ax_admin_set', { p_round: ROUND, p_key: KEY, p_closes: null, p_opens: new Date(v).toISOString(), p_public: null }); toast('시작 시각을 바꿨어요'); load(); };
 $('#bCloseNow').onclick = async () => { await rpc('ax_admin_set', { p_round: ROUND, p_key: KEY, p_closes: new Date().toISOString(), p_opens: null, p_public: null }); toast('투표를 마감했어요'); load(); };
 $('#bPub').onclick = async () => { await rpc('ax_admin_set', { p_round: ROUND, p_key: KEY, p_closes: null, p_opens: null, p_public: !ov.round.results_public }); load(); };
 $('#bCsv').onclick = async () => { const cj = no => cands.find(c => c.no === no) || {};
@@ -129,11 +141,12 @@ const W = '일월화수목금토';
 const fd = (iso, t = true) => { const d = new Date(iso); return `’${String(d.getFullYear()).slice(2)}. ${d.getMonth() + 1}. ${d.getDate()}.(${W[d.getDay()]})${t ? ' ' + d.getHours() + '시' + (d.getMinutes() ? ' ' + d.getMinutes() + '분' : '') : ''}`; };
 function buildReport() {
   const cj = no => cands.find(c => c.no === no) || {};
-  const ms = ov.members, voted = ms.filter(m => m.voted).length, rate = ms.length ? Math.round(voted / ms.length * 100) : 0;
+  const ANON = !!ov.round.anon, NTOP = ANON ? 10 : 20;
+  const ms = ov.members, voted = ANON ? (ov.participants || 0) : ms.filter(m => m.voted).length, nAll = ANON ? TARGET : ms.length, rate = nAll ? Math.round(voted / nAll * 1000) / 10 : 0;
   const closed = new Date(ov.round.closes_at) <= new Date(ov.round.now || Date.now());
   const tally = ov.tally.map((t, i) => ({ ...t, rank: ov.tally.findIndex(x => x.votes === t.votes) + 1 }));
-  const top = tally.slice(0, 20), cutVotes = top.length ? top[top.length - 1].votes : 0;
-  const tiesOut = tally.slice(20).filter(t => t.votes === cutVotes && cutVotes > 0);
+  const top = tally.slice(0, NTOP), cutVotes = top.length ? top[top.length - 1].votes : 0;
+  const tiesOut = tally.slice(NTOP).filter(t => t.votes === cutVotes && cutVotes > 0);
   const totalPicks = tally.reduce((a, t) => a + t.votes, 0) || 1;
   const byCat = {}; Object.keys(CATN).forEach(k => byCat[k] = { sel: 0, votes: 0, all: tally.filter(t => t.cat === k).length });
   tally.forEach(t => { byCat[t.cat].votes += t.votes; }); top.forEach(t => byCat[t.cat].sel++);
@@ -142,36 +155,42 @@ function buildReport() {
   const avg = (ov.ballots || []).length ? ((ov.ballots.reduce((a, b) => a + b.length, 0)) / ov.ballots.length).toFixed(1) : '0';
   const built = top.filter(t => cj(t.no).built).map(t => t.sub);
   const first = top[0] ? `${top[0].sub}(${cj(top[0].no).orig})` : '-';
-  const title = `AX30 → 20 AI파트너스 선정 투표 ${closed ? '결과' : '중간 결과'} 보고`;
-  const summary = `AI파트너스 ${ms.length}명 중 ${voted}명(${rate}%)이 참여하여 행정AX 우수사례 30종 중 20종을 선정함. 최다 득표는 「${first}」이며, 선정 20종은 ${fd('2026-11-24T00:00:00+09:00', false)}부터 전 직원 투표에 올림`;
+  const title = ANON ? `AX20 → 10 전 직원 투표 ${closed ? '결과' : '중간 결과'} 보고` : `AX30 → 20 AI파트너스 선정 투표 ${closed ? '결과' : '중간 결과'} 보고`;
+  const summary = ANON ? `전 직원(약 ${nAll.toLocaleString()}명) 대상 익명 투표에 ${voted.toLocaleString()}명(${rate}%)이 참여하여 AI파트너스 선정 20종 중 AX10을 선정함. 최다 득표는 「${first}」이며, 선정 10종은 부서와 함께 구축하여 ’27. 1. 8.까지 배포함`
+    : `AI파트너스 ${ms.length}명 중 ${voted}명(${rate}%)이 참여하여 행정AX 우수사례 30종 중 20종을 선정함. 최다 득표는 「${first}」이며, 선정 20종은 ${fd('2026-11-24T00:00:00+09:00', false)}부터 전 직원 투표에 올림`;
+  const WHO = ANON ? `전 직원 약 ${nAll.toLocaleString()}명(익명) / 참여 ${voted.toLocaleString()}명(참여율 ${rate}%)` : `AI파트너스 ${ms.length}명 / 참여 ${voted}명(참여율 ${rate}%)`;
+  const PLAN = ANON ? ['AX10 확정 및 방침서 작성 ’26. 12. 초', '부서 협업 구축(부서별 담당자 지정) ’26. 12.', '프로그램 배포 및 결과보고 ~’27. 1. 8.']
+    : ['전 직원 투표(선정 20종 → AX10)', 'AX10 확정 및 방침서 작성 ’26. 12. 초', '프로그램 구축·배포 및 결과보고 ~’27. 1. 8.'];
+  const TY = ANON ? '참여자 유형' : '선정위원 유형', OP = ANON ? '직원 의견(일부)' : '선정위원 의견(일부)';
+  const who = c => ANON ? '' : ` (${c.dept})`;
   const T = [];
   T.push(title, '', summary, '', '□ 투표 개요',
     ` ㅇ (기간) ${fd(ov.round.opens_at)} ~ ${fd(ov.round.closes_at)}`,
-    ` ㅇ (대상) AI파트너스 ${ms.length}명 / 참여 ${voted}명(참여율 ${rate}%)`,
-    ` ㅇ (방법) 자체 투표 사이트, 1인 최대 ${ov.round.max_pick || 7}개 복수 선택(1인 평균 ${avg}개)`,
-    '', '□ 투표 결과 : 상위 20종 선정');
+    ` ㅇ (대상) ${WHO}`,
+    ` ㅇ (방법) 자체 투표 사이트, 1인 최대 ${ov.round.max_pick || 7}개 복수 선택(1인 평균 ${avg}개)${ANON ? ', 이름 없이 휴대폰당 1표' : ''}`,
+    '', `□ 투표 결과 : 상위 ${NTOP}종 선정`);
   top.forEach(t => T.push(` ${String(t.rank).padStart(2)}위 ${t.no}. ${cj(t.no).orig} "${t.sub}" ${t.votes}표 (${CATN[t.cat]})`));
-  if (tiesOut.length) T.push(` ※ 20위 동점 ${tiesOut.length}종(${tiesOut.map(t => t.sub).join(', ')}) → 혁신팀 결정 필요`);
+  if (tiesOut.length) T.push(` ※ ${NTOP}위 동점 ${tiesOut.length}종(${tiesOut.map(t => t.sub).join(', ')}) → 혁신팀 결정 필요`);
   T.push('', '□ 분야별 현황');
   Object.entries(byCat).forEach(([k, v]) => T.push(` ㅇ ${CATN[k]} : ${v.all}종 중 ${v.sel}종 선정, 득표 비중 ${Math.round(v.votes / totalPicks * 100)}%`));
   if (built.length) T.push(` ※ 이미 구축된 도구 중 선정 : ${built.join(', ')} → 전 부서 확대 보급 대상`);
-  T.push('', '□ 선정위원 유형');
+  T.push('', '□ ' + TY);
   T.push(' ㅇ ' + Object.entries(types).map(([k, v]) => `${k === 'all' ? '올라운더형' : TYPEN[k]} ${v}명`).join(', '));
-  if (ov.comments.length) { T.push('', '□ 선정위원 의견(일부)'); ov.comments.slice(0, 6).forEach(c => T.push(` ㅇ “${c.comment}” (${c.dept})`)); }
-  T.push('', '□ 향후 계획', ' ㅇ 전 직원 투표(선정 20종 → AX10) ’26. 11. 24.(화) ~ 27.(금)', ' ㅇ AX10 확정 및 방침서 작성 ’26. 11. 말', ' ㅇ 프로그램 구축·배포 및 결과보고 ~’27. 1. 8.');
+  if (ov.comments.length) { T.push('', '□ ' + OP); ov.comments.slice(0, 6).forEach(c => T.push(` ㅇ “${c.comment}”${who(c)}`)); }
+  T.push('', '□ 향후 계획', ...PLAN.map(x => ' ㅇ ' + x));
   const text = T.join('\n');
   const rows = top.map((t, i) => `<tr class="${i === top.length - 1 ? 'cut' : ''}"><td>${t.rank}</td><td>${t.no}</td><td class="l"><b>${esc(t.sub)}</b><br><span class="note">${esc(cj(t.no).orig)}${cj(t.no).built ? ' · 이미 구축' : ''}</span></td><td>${CATN[t.cat]}</td><td class="l"><span class="bar" style="width:${Math.round(t.votes / (top[0].votes || 1) * 70)}px"></span>${t.votes}</td><td>${esc(cj(t.no).dept || '')}</td></tr>`).join('');
   const html = `<h1>${title}</h1><div class="dt">${fd(new Date().toISOString(), false)} · 기획예산과 중랑AI혁신팀</div><div class="sum">${esc(summary)}</div>
-  <h2>□ 투표 개요</h2><ul><li>ㅇ (기간) ${fd(ov.round.opens_at)} ~ ${fd(ov.round.closes_at)}</li><li>ㅇ (대상) AI파트너스 ${ms.length}명 / 참여 ${voted}명(참여율 ${rate}%)</li><li>ㅇ (방법) 자체 투표 사이트, 1인 최대 ${ov.round.max_pick || 7}개 복수 선택(1인 평균 ${avg}개)</li></ul>
-  <h2>□ 투표 결과 : 상위 20종 선정</h2><table><tr><th>순위</th><th>번호</th><th>도구</th><th>분야</th><th>득표</th><th>관련 부서</th></tr>${rows}</table>
-  ${tiesOut.length ? `<p class="note">※ 20위 동점 ${tiesOut.length}종(${esc(tiesOut.map(t => t.sub).join(', '))}) → 혁신팀 결정 필요</p>` : ''}
+  <h2>□ 투표 개요</h2><ul><li>ㅇ (기간) ${fd(ov.round.opens_at)} ~ ${fd(ov.round.closes_at)}</li><li>ㅇ (대상) ${WHO}</li><li>ㅇ (방법) 자체 투표 사이트, 1인 최대 ${ov.round.max_pick || 7}개 복수 선택(1인 평균 ${avg}개)</li></ul>
+  <h2>□ 투표 결과 : 상위 ${NTOP}종 선정</h2><table><tr><th>순위</th><th>번호</th><th>도구</th><th>분야</th><th>득표</th><th>관련 부서</th></tr>${rows}</table>
+  ${tiesOut.length ? `<p class="note">※ ${NTOP}위 동점 ${tiesOut.length}종(${esc(tiesOut.map(t => t.sub).join(', '))}) → 혁신팀 결정 필요</p>` : ''}
   <h2>□ 분야별 현황</h2><table><tr><th>분야</th><th>후보</th><th>선정</th><th>득표 비중</th></tr>${Object.entries(byCat).map(([k, v]) => `<tr><td>${CATN[k]}</td><td>${v.all}종</td><td>${v.sel}종</td><td class="l"><span class="bar" style="width:${Math.round(v.votes / totalPicks * 120)}px"></span>${Math.round(v.votes / totalPicks * 100)}%</td></tr>`).join('')}</table>
   ${built.length ? `<p class="note">※ 이미 구축된 도구 중 선정 : ${esc(built.join(', '))} → 전 부서 확대 보급 대상</p>` : ''}
-  <h2>□ 선정위원 유형</h2><ul><li>ㅇ ${Object.entries(types).map(([k, v]) => `${k === 'all' ? '올라운더형' : TYPEN[k]} ${v}명`).join(', ') || '-'}</li></ul>
-  ${ov.comments.length ? `<h2>□ 선정위원 의견(일부)</h2><ul>${ov.comments.slice(0, 6).map(c => `<li>ㅇ “${esc(c.comment)}” (${esc(c.dept)})</li>`).join('')}</ul>` : ''}
-  <h2>□ 향후 계획</h2><ul><li>ㅇ 전 직원 투표(선정 20종 → AX10) ’26. 11. 24.(화) ~ 27.(금)</li><li>ㅇ AX10 확정 및 방침서 작성 ’26. 11. 말</li><li>ㅇ 프로그램 구축·배포 및 결과보고 ~’27. 1. 8.</li></ul>
+  <h2>□ ${TY}</h2><ul><li>ㅇ ${Object.entries(types).map(([k, v]) => `${k === 'all' ? '올라운더형' : TYPEN[k]} ${v}명`).join(', ') || '-'}</li></ul>
+  ${ov.comments.length ? `<h2>□ ${OP}</h2><ul>${ov.comments.slice(0, 6).map(c => `<li>ㅇ “${esc(c.comment)}”${esc(who(c))}</li>`).join('')}</ul>` : ''}
+  <h2>□ 향후 계획</h2><ul>${PLAN.map(x => `<li>ㅇ ${x}</li>`).join('')}</ul>
   <p class="note" style="margin-top:14px">※ 개인별 선택 내용은 공개하지 않으며, 투표 자료는 결과 정리 후 삭제</p>`;
-  const data = { title, closed, members: ms.length, voted, rate, avg, opens: ov.round.opens_at, closes: ov.round.closes_at, top: top.map(t => ({ rank: t.rank, no: t.no, sub: t.sub, orig: cj(t.no).orig, cat: CATN[t.cat], votes: t.votes, dept: cj(t.no).dept, built: !!cj(t.no).built })), ties: tiesOut.map(t => t.sub), byCat, types, comments: ov.comments.map(c => ({ comment: c.comment, dept: c.dept })) };
+  const data = { title, closed, anon: ANON, members: nAll, voted, rate, avg, opens: ov.round.opens_at, closes: ov.round.closes_at, top: top.map(t => ({ rank: t.rank, no: t.no, sub: t.sub, orig: cj(t.no).orig, cat: CATN[t.cat], votes: t.votes, dept: cj(t.no).dept, built: !!cj(t.no).built })), ties: tiesOut.map(t => t.sub), byCat, types, comments: ov.comments.map(c => ({ comment: c.comment, dept: c.dept })) };
   return { html, text, data };
 }
 async function copyText(t, msg) { try { await navigator.clipboard.writeText(t); toast(msg); } catch (e) { const ta = $('#rText'); ta.value = t; ta.select(); try { document.execCommand('copy'); toast(msg); } catch (x) { toast('복사가 막혔어요. 길게 눌러 복사해 주세요'); } } }
@@ -183,24 +202,24 @@ $('#bReport').onclick = () => { if (!ov) return; const r = buildReport(); $('#pa
   $('#rPoster').onclick = () => posterDown(false); $('#rPosterIn').onclick = () => posterDown(true);
   $('#rClose').onclick = () => $('#rep').classList.remove('on'); };
 function posterData() {
-  const ms = ov.members, voted = ms.filter(m => m.voted).length; const mx = Math.max(1, ...ov.tally.map(t => t.votes));
+  const ANON = !!ov.round.anon, ms = ov.members, voted = ANON ? (ov.participants || 0) : ms.filter(m => m.voted).length, nAll = ANON ? TARGET : ms.length; const mx = Math.max(1, ...ov.tally.map(t => t.votes));
   const items = ov.tally.map(t => ({ no: t.no, rank: ov.tally.findIndex(x => x.votes === t.votes) + 1, votes: t.votes, ratio: Math.round(t.votes / mx * 100) }));
   const tc = {}; let tot = 0; (ov.ballots || []).forEach(b => { const c = {}; b.forEach(n => { const cc = cands.find(x => x.no === n) || {}; const k = cc.area || cc.cat; if (k) c[k] = (c[k] || 0) + 1; });
     const sr = Object.entries(c).sort((p, q) => q[1] - p[1]); if (!sr.length) return; const k = sr.length > 1 && sr[0][1] === sr[1][1] ? 'all' : sr[0][0]; tc[k] = (tc[k] || 0) + 1; tot++; });
   const types = {}; Object.entries(tc).forEach(([k, v]) => types[k] = Math.round(v / Math.max(tot, 1) * 100));
   return { items, types, comments: ov.comments.map(c => c.comment).filter(Boolean).slice(0, 12), closes_at: ov.round.closes_at, max_pick: ov.round.max_pick || 7,
-    closed: new Date(ov.round.closes_at) <= new Date(ov.round.now || Date.now()), voted, members: ms.length, rate: ms.length ? Math.round(voted / ms.length * 100) : 0 };
+    closed: new Date(ov.round.closes_at) <= new Date(ov.round.now || Date.now()), anon: ANON, voted, members: nAll, rate: nAll ? Math.round(voted / nAll * 1000) / 10 : 0 };
 }
 async function posterDown(internal) {
   if (!ov || !window.AXPoster) return toast('잠시 뒤 다시 눌러 주세요');
   toast('포스터를 그리는 중이에요…', 1500);
   const url = await window.AXPoster.make(posterData(), cands, { internal });
-  const name = internal ? 'AX30_20_결과포스터_내부용.png' : 'AX30_20_결과포스터.png';
+  const name = internal ? 'AX20_10_결과포스터_내부용.png' : 'AX20_10_결과포스터.png';
   $('#pimg').innerHTML = `<img src="${url}" alt="결과 포스터"><p>${internal ? '내부 보고용: 표 수와 참여율이 들어 있어요. 단톡방에는 공개용을 올려 주세요.' : '공개용: 순위와 비율만 들어 있어요.'} 저장이 안 되면 그림을 길게 누르거나 오른쪽 클릭해서 저장하세요.</p>`;
   $('#rep').scrollTo({ top: 0, behavior: 'smooth' });
   try { const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); toast('포스터를 내려받았어요'); } catch (e) {}
 }
 document.body.dataset.mt = 'now';
 document.querySelectorAll('#mtabs [data-mt]').forEach(b => b.onclick = () => { document.body.dataset.mt = b.dataset.mt; document.querySelectorAll('#mtabs [data-mt]').forEach(x => x.classList.toggle('on', x === b)); scrollTo(0, 0); });
-fetch('assets/candidates.json?v=pilot1').then(r => r.json()).then(c => { cands = c; if (KEY) load(); }).catch(() => {});
+fetch('assets/candidates.json?v=r2a').then(r => r.json()).then(c => { cands = c; if (KEY) load(); }).catch(() => {});
 })();

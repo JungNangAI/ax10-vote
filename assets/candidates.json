@@ -30,29 +30,6 @@
   "area": "doc"
  },
  {
-  "no": 2,
-  "cat": "O",
-  "orig": "｢글주임｣ AI배포",
-  "sub": "인사말씀·보도자료·카드뉴스",
-  "line": "보도자료부터 카드뉴스까지!",
-  "descr": "부서가 쓴 보도자료 초안을 넣으면 홍보 기준에 맞게 다듬고, 같은 내용으로 카드뉴스·SNS 글·홈페이지 공지까지 만들어 줌 행사 이름·날짜·참석자 같은 정보만 넣으면 인사말씀 원고 초안을 한글 파일로 써 줌",
-  "org": "재정경제부",
-  "detail": [
-   "보도자료: 우수 보도자료 서식(제목·리드·본문)으로 다듬어 한글 파일 출력",
-   "한 원고로 카드뉴스 문안·이미지, SNS 글, 홈페이지 공지, 쉬운말 안내문 동시 제작",
-   "인사말씀: 소통지원팀 매뉴얼·우수사례 기준, 구정백서 성과 수치 자동 반영, 개조식 한글(HWPX) 출력"
-  ],
-  "dept": "홍보담당관",
-  "built": true,
-  "links": [
-   "https://gitlab.aigov.go.kr/chaeun74/Releasepick",
-   "https://gitlab.aigov.go.kr/mukju9/press-release-proofreader",
-   "https://github.com/mouseco/public-cardnews"
-  ],
-  "feas": null,
-  "area": "doc"
- },
- {
   "no": 3,
   "cat": "O",
   "orig": "회의록 작성 도우미",
@@ -265,33 +242,6 @@
   "area": "law"
  },
  {
-  "no": 11,
-  "cat": "O",
-  "orig": "외부강의등 신고 가이드",
-  "sub": "청탁금지법 판단 도우미",
-  "line": "받아도 될까? 제가 판단해 줄게요",
-  "descr": "외부강의·선물·식사 같은 상황을 예/아니오로 고르면 받아도 되는지, 얼마까지인지, 신고해야 하는지 바로 알려 줌",
-  "org": "경남 양산시·국민권익위원회",
-  "detail": [
-   "외부강의 사례금 상한, 선물·음식물 가액, 신고 대상·기한을 단계별로 판단",
-   "마지막 화면에서 신고서 초안 출력",
-   "이해충돌방지법 사적이해관계 신고 판단도 함께",
-   "브라우저만으로 작동, 감사담당관 내용 검수 후 보급"
-  ],
-  "dept": "감사담당관",
-  "built": false,
-  "links": [
-   "https://www.threads.com/@publicai_79/post/DdbPoZmD5Pc",
-   "https://www.easylaw.go.kr/CSP/CsmMain.laf?csmSeq=911"
-  ],
-  "feas": {
-   "level": "하",
-   "period": "1~2주",
-   "form": "브라우저만으로 작동"
-  },
-  "area": "law"
- },
- {
   "no": 12,
   "cat": "O",
   "orig": "K-지방직 정책서랍",
@@ -315,91 +265,6 @@
    "level": "하",
    "period": "2~3주",
    "form": "AI에 자료 연결"
-  },
-  "area": "law"
- },
- {
-  "no": 13,
-  "cat": "O",
-  "orig": "나라장터 MCP",
-  "sub": "나라장터 비슷한 계약 찾기",
-  "line": "비슷한 계약 금액, 찾아왔어요",
-  "descr": "사업 이름을 넣으면 다른 기관이 맺은 비슷한 계약의 금액·업체·공고 내용을 나라장터에서 찾아 정리해 줌",
-  "org": "민간 개인",
-  "detail": [
-   "조달청이 공개하는 나라장터 계약·입찰공고 자료를 AI에 연결",
-   "예: \"행사 대행 용역, 최근 서울 자치구 계약 금액\"",
-   "예산 산정·과업지시서 작성 때 참고",
-   "공공데이터포털 인증키만 있으면 됨"
-  ],
-  "dept": "재무과",
-  "built": false,
-  "links": [
-   "https://github.com/Datajang/narajangteo_mcp_server",
-   "https://www.data.go.kr/data/15058815/openapi.do",
-   "https://glama.ai/mcp/servers/ChangooLee/mcp-kr-g2b/tools/get_contract_process_data"
-  ],
-  "feas": {
-   "level": "하",
-   "period": "2주",
-   "form": "AI에 자료 연결"
-  },
-  "area": "law"
- },
- {
-  "no": 14,
-  "cat": "O",
-  "orig": "ir-search",
-  "sub": "공모사업 알리미",
-  "line": "새 공모 떴어요!",
-  "descr": "중앙부처·서울시 공모 공고를 매일 모아 관련 부서에 알려 주고, 신청서 초안도 도와줌",
-  "org": "민간 개인",
-  "detail": [
-   "부처·서울시 누리집 공고를 매일 모아 분야별로 분류",
-   "관련 부서에 알림",
-   "공고문을 읽고 신청서 초안 작성 지원",
-   "외부재원 확보 기회 놓침 방지"
-  ],
-  "dept": "기획예산과",
-  "built": false,
-  "links": [
-   "https://github.com/djfksjd/ir-search",
-   "https://kklique.github.io/ipax-support/",
-   "https://gitlab.aigov.go.kr/dlwogud/jiwonmoa"
-  ],
-  "feas": {
-   "level": "중",
-   "period": "3~4주",
-   "form": "AI 스킬"
-  },
-  "area": "law"
- },
- {
-  "no": 15,
-  "cat": "O",
-  "orig": "서울 자치구 조례 정합성 지도",
-  "sub": "낡은 조례 찾기 지도",
-  "line": "낡은 조례, 지도로 찾았어요",
-  "descr": "우리 구 조례가 이미 바뀐 옛 법 조문을 가리키고 있는지 찾아 서울 자치구별 지도로 보여 줌",
-  "org": "지방자치혁신연구원",
-  "detail": [
-   "조례가 인용한 법률 조문을 현행 법령과 자동 대조",
-   "정비가 필요한 조례·조문 목록 작성",
-   "서울시·25개 자치구 비교 지도",
-   "조례 정비 업무 효율화"
-  ],
-  "dept": "기획예산과",
-  "built": false,
-  "links": [
-   "https://seoul-dead-cite.vercel.app/",
-   "https://gitlab.aigov.go.kr/chrisryugj/korean-law-mcp",
-   "https://ggc-lawtree.vercel.app/",
-   "https://gitlab.aigov.go.kr/sura1212/gunpolaw-view"
-  ],
-  "feas": {
-   "level": "중",
-   "period": "3~4주",
-   "form": "브라우저만으로 작동"
   },
   "area": "law"
  },
@@ -452,57 +317,6 @@
   "area": "ops"
  },
  {
-  "no": 18,
-  "cat": "O",
-  "orig": "지자체 주간행사 캘린더",
-  "sub": "주간행사 공유 달력",
-  "line": "구 전체 행사, 한 달력에!",
-  "descr": "부서마다 내는 주간행사 문서를 자동으로 읽어 구 전체 행사 달력으로 합치고 겹치는 일정을 표시",
-  "org": "횡성군",
-  "detail": [
-   "주간행사 PDF·한글 파일 자동 읽기",
-   "구 전체 캘린더로 통합, 같은 시간 일정 겹침 경고",
-   "간부 일정 조율·행사 중복 방지"
-  ],
-  "dept": "기획예산과",
-  "built": false,
-  "links": [
-   "https://gitlab.aigov.go.kr/grory/weekly-event-calendar"
-  ],
-  "feas": {
-   "level": "중",
-   "period": "2~3주",
-   "form": "웹사이트"
-  },
-  "area": "ops"
- },
- {
-  "no": 19,
-  "cat": "O",
-  "orig": "시장실 결재 대기 현황판",
-  "sub": "구청장 결재 대기 순서 안내",
-  "line": "결재 순서, 화면으로 알려 드려요",
-  "descr": "구청장실·부구청장실 대면결재 대기 순서를 모니터로 보여 주고, 결재를 마치면 직접 퇴실 처리",
-  "org": "광양시",
-  "detail": [
-   "대기 모니터, 비서실 관리 화면, 퇴실 처리 화면 3가지",
-   "비서실은 순서 조정, 직원은 자리에서 대기 순서 확인",
-   "복도 대기 시간 감소",
-   "광양시 공개 도구 활용"
-  ],
-  "dept": "행정지원과",
-  "built": false,
-  "links": [
-   "https://gitlab.aigov.go.kr/kimjae1995/mayor_line"
-  ],
-  "feas": {
-   "level": "하",
-   "period": "1~2주",
-   "form": "웹사이트"
-  },
-  "area": "ops"
- },
- {
   "no": 20,
   "cat": "O",
   "orig": "서무실록",
@@ -528,32 +342,6 @@
    "level": "중",
    "period": "3~4주",
    "form": "내 PC 도구"
-  },
-  "area": "ops"
- },
- {
-  "no": 21,
-  "cat": "O",
-  "orig": "공무원 필수교육 이수 관리 시스템",
-  "sub": "수료증 올리면 이수 현황 집계",
-  "line": "수료증만 올리면 집계 끝",
-  "descr": "직원이 수료증만 올리면 자동으로 확인해 부서별 이수 현황을 집계",
-  "org": "군산시",
-  "detail": [
-   "수료증 이미지·PDF에서 이름·교육명·수료일 자동 인식",
-   "부서별·과정별 이수율 집계, 미이수자 목록",
-   "수료증 일괄 내려받기",
-   "서무의 수료증 취합 업무 감소"
-  ],
-  "dept": "행정지원과",
-  "built": false,
-  "links": [
-   "https://gitlab.aigov.go.kr/anms0214/gongedu"
-  ],
-  "feas": {
-   "level": "하",
-   "period": "2주",
-   "form": "웹사이트"
   },
   "area": "ops"
  },
@@ -678,61 +466,6 @@
   "built": false,
   "links": [],
   "feas": null,
-  "area": "civ"
- },
- {
-  "no": 27,
-  "cat": "O",
-  "orig": "통계·예산·법령 MCP",
-  "sub": "브리핑",
-  "line": "의원 질의, 과별로 정리했어요",
-  "descr": "구의회 회의록을 매일 모아 의원 질의와 요구사항을 과별로 정리하고 예상 질의·답변 초안을 만들어 줌",
-  "org": "광주 서구·광진구",
-  "detail": [
-   "중랑구의회 공개 회의록 자동 수집",
-   "의원별 질의·요구사항·구청 약속을 소관 과별로 분류",
-   "과장별 이행 추적표, 예상 질의·답변 초안",
-   "행정사무감사 답변 검색기와 연계"
-  ],
-  "dept": "공통",
-  "built": false,
-  "links": [
-   "https://local-government-mcp.vercel.app",
-   "https://council.jungnang.go.kr/kr/minutes/late.do",
-   "https://gitlab.aigov.go.kr/kimjs1408/kookgam-ax",
-   "https://gukgam-watch.vercel.app"
-  ],
-  "feas": {
-   "level": "중",
-   "period": "3~4주",
-   "form": "AI 스킬"
-  },
-  "area": "civ"
- },
- {
-  "no": 28,
-  "cat": "O",
-  "orig": "국정감사 답변 검색기",
-  "sub": "행정사무감사 예상질의답변 찾기",
-  "line": "답변, 바로 찾아 띄워요",
-  "descr": "미리 준비한 예상질의답변을 감사장에서 낱말로 바로 찾고, 간부 화면에는 고른 답변만 크게 띄워 줌",
-  "org": "공직 개인",
-  "detail": [
-   "과별 예상질의답변 엑셀을 파일 하나로 변환",
-   "실무자: 의원·분야·낱말 검색 / 간부: 고른 답변만 큰 글씨로 표시",
-   "행감·구정질문·예산심사 공통",
-   "내부 자료라 인터넷에 올리지 않고 PC에서만 사용"
-  ],
-  "dept": "공통",
-  "built": false,
-  "links": [
-   "https://www.threads.com/@kim.18041/post/DenkTDliLYm"
-  ],
-  "feas": {
-   "level": "하",
-   "period": "1~2주",
-   "form": "브라우저만으로 작동"
-  },
   "area": "civ"
  },
  {
