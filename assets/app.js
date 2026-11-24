@@ -479,7 +479,7 @@ async function makeResultPoster(r) {
     cm.forEach(t => { g.fillStyle = '#fff'; roundRect(g, 80, y, W - 160, 56, 16); g.fill(); g.fillStyle = '#1f1f24'; g.font = F(700, 25); const s = '“' + (t.length > 34 ? t.slice(0, 33) + '…' : t) + '”'; g.fillText(s, 104, y + 37); y += 70; }); y += 20; }
   // next
   g.fillStyle = 'rgba(34,230,255,.12)'; roundRect(g, 70, y, W - 140, 150, 22); g.fill(); g.strokeStyle = '#22e6ff'; g.lineWidth = 2; roundRect(g, 70, y, W - 140, 150, 22); g.stroke();
-  g.textAlign = 'center'; g.fillStyle = '#fff'; g.font = F(900, 36); g.fillText('다음은 부서와 함께 만들기! AX10 구축·배포', W / 2, y + 62); g.fillStyle = '#ffbf4a'; g.font = F(800, 30); g.fillText('’26. 12. ~ ’27. 1. 8.', W / 2, y + 112);
+  g.textAlign = 'center'; g.fillStyle = '#fff'; g.font = F(900, 36); g.fillText('다음은 부서와 함께 만들기! AX10 구축·배포', W / 2, y + 62); g.fillStyle = '#ffbf4a'; g.font = F(800, 30); g.fillText('’26. 12.~ 완성되는 대로 배포', W / 2, y + 112);
   g.fillStyle = '#7fa3b6'; g.font = F(700, 22); g.fillText('중랑구 기획예산과 중랑AI혁신팀 · #AX10 #중랑AX', W / 2, H - 40); g.textAlign = 'left';
   return c.toDataURL('image/png');
 }

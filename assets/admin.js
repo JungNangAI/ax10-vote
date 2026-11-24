@@ -156,10 +156,10 @@ function buildReport() {
   const built = top.filter(t => cj(t.no).built).map(t => t.sub);
   const first = top[0] ? `${top[0].sub}(${cj(top[0].no).orig})` : '-';
   const title = ANON ? `AX20 → 10 전 직원 투표 ${closed ? '결과' : '중간 결과'} 보고` : `AX30 → 20 AI파트너스 선정 투표 ${closed ? '결과' : '중간 결과'} 보고`;
-  const summary = ANON ? `전 직원(약 ${nAll.toLocaleString()}명) 대상 익명 투표에 ${voted.toLocaleString()}명(${rate}%)이 참여하여 AI파트너스 선정 20종 중 AX10을 선정함. 최다 득표는 「${first}」이며, 선정 10종은 부서와 함께 구축하여 ’27. 1. 8.까지 배포함`
+  const summary = ANON ? `전 직원(약 ${nAll.toLocaleString()}명) 대상 익명 투표에 ${voted.toLocaleString()}명(${rate}%)이 참여하여 AI파트너스 선정 20종 중 AX10을 선정함. 최다 득표는 「${first}」이며, 선정 10종은 부서와 함께 만들어 완성되는 대로 배포함`
     : `AI파트너스 ${ms.length}명 중 ${voted}명(${rate}%)이 참여하여 행정AX 우수사례 30종 중 20종을 선정함. 최다 득표는 「${first}」이며, 선정 20종은 ${fd('2026-11-24T00:00:00+09:00', false)}부터 전 직원 투표에 올림`;
   const WHO = ANON ? `전 직원 약 ${nAll.toLocaleString()}명(익명) / 참여 ${voted.toLocaleString()}명(참여율 ${rate}%)` : `AI파트너스 ${ms.length}명 / 참여 ${voted}명(참여율 ${rate}%)`;
-  const PLAN = ANON ? ['AX10 확정 및 방침서 작성 ’26. 12. 초', '부서 협업 구축(부서별 담당자 지정) ’26. 12.', '프로그램 배포 및 결과보고 ~’27. 1. 8.']
+  const PLAN = ANON ? ['AX10 확정 및 방침서 작성 ’26. 12. 초', '부서 협업 구축(부서별 담당자 지정) ’26. 12.', '완성되는 대로 순차 배포 및 결과보고']
     : ['전 직원 투표(선정 20종 → AX10)', 'AX10 확정 및 방침서 작성 ’26. 12. 초', '프로그램 구축·배포 및 결과보고 ~’27. 1. 8.'];
   const TY = ANON ? '참여자 유형' : '선정위원 유형', OP = ANON ? '직원 의견(일부)' : '선정위원 의견(일부)';
   const who = c => ANON ? '' : ` (${c.dept})`;
