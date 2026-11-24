@@ -30,6 +30,29 @@
   "area": "doc"
  },
  {
+  "no": 2,
+  "cat": "O",
+  "orig": "｢글주임｣ AI배포",
+  "sub": "인사말씀·보도자료·카드뉴스",
+  "line": "보도자료부터 카드뉴스까지!",
+  "descr": "부서가 쓴 보도자료 초안을 넣으면 홍보 기준에 맞게 다듬고, 같은 내용으로 카드뉴스·SNS 글·홈페이지 공지까지 만들어 줌 행사 이름·날짜·참석자 같은 정보만 넣으면 인사말씀 원고 초안을 한글 파일로 써 줌",
+  "org": "재정경제부",
+  "detail": [
+   "보도자료: 우수 보도자료 서식(제목·리드·본문)으로 다듬어 한글 파일 출력",
+   "한 원고로 카드뉴스 문안·이미지, SNS 글, 홈페이지 공지, 쉬운말 안내문 동시 제작",
+   "인사말씀: 소통지원팀 매뉴얼·우수사례 기준, 구정백서 성과 수치 자동 반영, 개조식 한글(HWPX) 출력"
+  ],
+  "dept": "홍보담당관",
+  "built": true,
+  "links": [
+   "https://gitlab.aigov.go.kr/chaeun74/Releasepick",
+   "https://gitlab.aigov.go.kr/mukju9/press-release-proofreader",
+   "https://github.com/mouseco/public-cardnews"
+  ],
+  "feas": null,
+  "area": "doc"
+ },
+ {
   "no": 3,
   "cat": "O",
   "orig": "회의록 작성 도우미",
@@ -371,28 +394,6 @@
    "period": "2주",
    "form": "내 PC 도구"
   },
-  "area": "ops"
- },
- {
-  "no": 23,
-  "cat": "O",
-  "orig": "출석시스템",
-  "sub": "QR 출석부터 만족도조사 및 결과보고서까지",
-  "line": "QR로 출석부터 결과보고까지",
-  "descr": "교육·행사에서 QR로 출석을 받아 화면에 실시간으로 보여 주고, 출석부와 위촉장을 자동으로 만들어 줌",
-  "org": "-",
-  "detail": [
-   "QR 출석, 강의실 화면 실시간 표시, 실시간 질문·투표",
-   "엑셀 출석부·위촉장 자동 생성",
-   "만족도조사와 결과보고서 작성까지 한 흐름으로 확장"
-  ],
-  "dept": "공통",
-  "built": false,
-  "links": [
-   "https://jungnangai.github.io/edu-attendance/",
-   "https://gitlab.aigov.go.kr/gslee0819/townhall-kit"
-  ],
-  "feas": null,
   "area": "ops"
  },
  {
