@@ -283,9 +283,9 @@ function paintNotes() { $$('.card').forEach(el => { const n = notes[+el.dataset.
 let infoGo = null;
 document.addEventListener('keydown', e => { if (!$('#mInfo').classList.contains('on') || !infoGo || /TEXTAREA|INPUT/.test(document.activeElement.tagName)) return; if (e.key === 'ArrowRight') infoGo(1); if (e.key === 'ArrowLeft') infoGo(-1); });
 // detail sheet
-function openInfo(c) {
+function openInfo(c, ro) {
   const v = CAT[c.cat]; const on = picks.includes(c.no);
-  const order = $$('.card').map(el => +el.dataset.no); const oi = order.indexOf(c.no); const navOk = oi >= 0 && order.length > 1;
+  const order = ro ? ro.order : $$('.card').map(el => +el.dataset.no); const oi = order.indexOf(c.no); const navOk = oi >= 0 && order.length > 1;
   $('#infoSheet').innerHTML = `${navOk ? `<div class="inav"><button id="iPrev" ${oi === 0 ? 'disabled' : ''}>‹ 이전</button><span>${oi + 1} / ${order.length}</span><button id="iNext" ${oi === order.length - 1 ? 'disabled' : ''}>다음 ›</button></div>` : ''}<button class="x" aria-label="닫기">✕</button><span class="tag" style="color:${v.c};border-color:${v.c}">${v.name} · ${c.no}번</span>
     <h3>${esc(c.sub)}</h3><div class="meta">${esc(c.orig)} · ${esc(c.org || '')}</div>
     <div class="big"><img src="${img(c.no)}" alt=""><div class="bigsay">${esc(c.line)}</div></div>
@@ -293,16 +293,17 @@ function openInfo(c) {
     <p>${esc(c.descr || '')}</p>
     ${(c.detail || []).length ? `<ul class="det">${c.detail.map(d => `<li>${esc(d)}</li>`).join('')}</ul>` : ''}
     ${c.feas ? `<div class="feas"><b>만들기</b><span>난이도 ${esc(c.feas.level)}</span><span>${esc(c.feas.period)}</span><span>${esc(c.feas.form)}</span></div>` : ''}
-    <div class="rate"><b>이 도구, 우리 구에 얼마나 중요할까요?</b><span class="rs">고르지 않아도 평가할 수 있어요</span>
+    ${ro ? `<div class="rres">${ro.rank[c.no] ? `<b>${ro.rank[c.no]}위</b>` : ''}${ro.rank[c.no] && ro.rank[c.no] <= 10 ? '<span>AX10에 들었어요</span>' : ''}</div>` : `<div class="rate"><b>이 도구, 우리 구에 얼마나 중요할까요?</b><span class="rs">고르지 않아도 평가할 수 있어요</span>
       <div class="stars" role="radiogroup" aria-label="중요도">${[1, 2, 3, 4, 5].map(k => `<button data-s="${k}" role="radio" aria-label="${k}점">★</button>`).join('')}<em id="slabel"></em></div>
       <textarea id="noteTxt" maxlength="300" rows="2" placeholder="이 도구에 대한 의견을 자유롭게 남겨 주세요 (선택)"></textarea><div class="nsave" id="nsave"></div></div>
-    <button class="btn ${on ? 'ghost' : ''}" id="infoPick">${on ? '고른 것에서 빼기' : '이 도구 고르기'}</button>`;
+    <button class="btn ${on ? 'ghost' : ''}" id="infoPick">${on ? '고른 것에서 빼기' : '이 도구 고르기'}</button>`}`;
   if ($('#mInfo').classList.contains('on')) { $('#infoSheet').scrollTop = 0; } else openModal('#mInfo');
   $('#infoSheet .x').onclick = () => closeModal('#mInfo');
-  const go = d => { const t = order[oi + d]; if (t == null) return; if (noteT) { clearTimeout(noteT); noteT = null; saveNote(c.no); } buzz(5); openInfo(byNo[t]); };
+  const go = d => { const t = order[oi + d]; if (t == null) return; if (noteT) { clearTimeout(noteT); noteT = null; saveNote(c.no); } buzz(5); openInfo(byNo[t], ro); };
   if (navOk) { $('#iPrev').onclick = () => go(-1); $('#iNext').onclick = () => go(1); infoGo = go;
     const big = $('#infoSheet .big'); let sx = null; big.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive: true });
     big.addEventListener('touchend', e => { if (sx == null) return; const dx = e.changedTouches[0].clientX - sx; sx = null; if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1); }); } else infoGo = null;
+  if (ro) return;
   { const n = notes[c.no] || {}; const LB = ['', '별로예요', '조금 필요', '보통', '필요해요', '꼭 필요해요'];
     const paint = s => { $$('#infoSheet .stars button').forEach(b => b.classList.toggle('on', +b.dataset.s <= (s || 0))); $('#slabel').textContent = s ? LB[s] : ''; };
     paint(n.score); $('#noteTxt').value = n.comment || '';
@@ -420,9 +421,12 @@ async function showResults() {
   const r = await checkResults(); if (!r || !r.public) { toast('결과는 마감 후 공개돼요'); return; }
   show('sRes'); const box = $('#resList'); box.innerHTML = '';
   const items = r.items.slice(0, cands.length).reverse();
+  const resRO = { order: r.items.slice(0, cands.length).map(x => x.no), rank: Object.fromEntries(r.items.map(x => [x.no, x.rank])) };
   for (let i = 0; i < items.length; i++) {
     const it = items[i], c = byNo[it.no]; const d = document.createElement('div'); d.className = 'rbar'; d.style.setProperty('--c', CAT[c.cat].c);
-    d.innerHTML = `<div class="rk">${it.rank}</div><img src="${img(it.no)}" alt=""><div class="bar"><i></i><span>${esc(c.sub)}</span></div>`;
+    d.innerHTML = `<div class="rk">${it.rank}</div><img src="${img(it.no)}" alt=""><div class="bar"><i></i><span>${esc(c.sub)}</span></div><span class="rmore" aria-hidden="true">›</span>`;
+    d.tabIndex = 0; d.setAttribute('role', 'button'); d.setAttribute('aria-label', `${it.rank}위 ${c.sub} 자세히 보기`);
+    d.onclick = () => openInfo(c, resRO); d.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openInfo(c, resRO); } };
     box.prepend(d); await new Promise(res => setTimeout(res, fx.motion ? 160 : 0)); d.classList.add('on'); d.querySelector('i').style.width = Math.max(8, it.ratio) + '%'; buzz(5); blip(400 + i * 25, .04);
   }
   const cut = document.createElement('div'); cut.className = 'cut'; cut.textContent = '— 여기까지 AX10 —'; const rows = box.querySelectorAll('.rbar'); if (rows[10]) box.insertBefore(cut, rows[10]); else box.appendChild(cut);
