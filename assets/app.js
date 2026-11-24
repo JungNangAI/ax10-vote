@@ -497,7 +497,7 @@ $('#bStart').onclick = () => { buzz(10); blip(600); if (ANON) { choose(anonMe())
   $('#bStart').disabled = true; $('#count').textContent = '투표 정보를 불러오는 중…';
   if (DEMO) $('#demoTag').innerHTML = '<span class="demo">미리보기 모드 · 여기서 고른 내용은 이 브라우저에만 저장돼요</span>';
   try {
-    const cj = await fetch('assets/candidates.json?v=r2d').then(r => r.json()).catch(() => null);
+    const cj = await fetch('assets/candidates.json?v=r2f').then(r => r.json()).catch(() => null);
     if (DEMO) Demo.setCands(cj || []);
     info = await rpc('ax_round_info', { p_round: ROUND });
     cands = (DEMO ? cj : await rpc('ax_candidates', { p_round: ROUND })) || [];
