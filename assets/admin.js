@@ -221,5 +221,5 @@ async function posterDown(internal) {
 }
 document.body.dataset.mt = 'now';
 document.querySelectorAll('#mtabs [data-mt]').forEach(b => b.onclick = () => { document.body.dataset.mt = b.dataset.mt; document.querySelectorAll('#mtabs [data-mt]').forEach(x => x.classList.toggle('on', x === b)); scrollTo(0, 0); });
-fetch('assets/candidates.json?v=r2c').then(r => r.json()).then(c => { cands = c; if (KEY) load(); }).catch(() => {});
+fetch('assets/candidates.json?v=r2d').then(r => r.json()).then(c => { cands = c; if (KEY) load(); }).catch(() => {});
 })();
