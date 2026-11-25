@@ -10,8 +10,27 @@
 <meta property="og:image" content="https://jungnangai.github.io/ax10-vote/assets/og.png">
 <link rel="icon" href="assets/favicon.png"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/style.css?v=r2e">
+<link rel="stylesheet" href="assets/style.css?v=r2h">
 </head><body>
+<script>
+/* 새올(IE 모드) 등 옛 브라우저에서 열리면 Edge로 다시 열기 */
+(function(){
+  var ie = !!document.documentMode || /MSIE |Trident\//.test(navigator.userAgent);
+  if (!ie) return;
+  var url = 'https://jungnangai.github.io/ax10-vote/';
+  document.write('<div id="ieBox" style="position:fixed;left:0;top:0;width:100%;height:100%;z-index:99999;background:#9C1B85;color:#fff;font-family:\'Malgun Gothic\',sans-serif;text-align:center;overflow:auto">'
+   + '<div style="max-width:620px;margin:60px auto;padding:0 24px">'
+   + '<div style="font-size:22px;font-weight:bold;opacity:.85">AX10 전 직원 투표</div>'
+   + '<div style="font-size:36px;font-weight:bold;line-height:1.35;margin:18px 0 14px">이 창은 옛 방식(IE 모드)으로 열려서<br>투표 화면이 보이지 않아요</div>'
+   + '<div style="font-size:18px;line-height:1.7;opacity:.9">아래 버튼을 누르면 Edge에서 바로 열려요.</div>'
+   + '<a href="microsoft-edge:' + url + '" style="display:inline-block;margin:26px 0 18px;padding:20px 44px;border-radius:40px;background:#fff;color:#9C1B85;font-size:26px;font-weight:bold;text-decoration:none">Edge로 열어서 투표하기</a>'
+   + '<div style="font-size:17px;line-height:1.8;opacity:.9">버튼이 안 되면 주소를 Edge·크롬 주소창에 붙여 넣으세요<br><b style="font-size:20px">' + url + '</b><br>또는 휴대폰으로 QR을 찍어 주세요</div>'
+   + '<div style="display:inline-block;margin-top:18px;background:#fff;padding:10px;border-radius:14px"><img src="assets/qr.png" width="180" height="180" alt="투표 사이트 QR"></div>'
+   + '</div></div>');
+  setTimeout(function(){ try { window.location.href = 'microsoft-edge:' + url; } catch (e) {} }, 600);
+})();
+</script>
+
 <div class="fx" id="fx"><button class="gear" id="gear" aria-label="효과 설정">⚙</button><div class="fxm"><button data-k="vib">진동</button><button data-k="snd">소리</button><button data-k="motion">효과</button></div></div>
 <div class="toast" id="toast"></div>
 <label class="ios-hap" aria-hidden="true"><input type="checkbox" switch id="hap"></label>
@@ -24,7 +43,7 @@
     <div class="stage" id="stage"><div class="bubble3d" id="bubble"></div></div>
     <div class="title">AX20 → 10</div>
     <div class="sub">전 직원이 <b>AX10</b>을 고릅니다</div>
-    <ol class="story" aria-label="지금까지 온 길"><li><b>100+</b><span>공공AX 사례<br>아카이브</span></li><li><b>30</b><span>2차 회의</span></li><li><b>20</b><span>AI파트너스<br>40명 투표</span></li><li class="now"><b>10</b><span>전 직원<br>지금!</span></li></ol>
+    <ol class="story" aria-label="지금까지 온 길"><li><b>100+</b><span>공공AX 사례<br>아카이브</span></li><li><b>30</b><span>전략<br>보고</span></li><li><b>20</b><span>AI파트너스<br>38명 선정</span></li><li class="now"><b>10</b><span>전 직원<br>지금!</span></li></ol>
     <div class="ro">
       <div class="gold"><small>투표 기간</small><strong id="period">~ 12. 2.(수) 18시</strong></div>
       <div><small>선택</small><strong>1인 최대 <span id="maxTxt">10</span>개</strong></div>
@@ -99,7 +118,7 @@
 <div class="ov" id="ovBoot"><div class="rings"><i></i><i></i><i></i><i></i><b><img src="assets/logo-sm.png" alt="" class="ringlogo"></b></div><div class="boot-lines mono" id="bootLines"></div><div class="boot-hello" id="bootHello"></div><button class="skip" id="skipBoot">건너뛰기</button></div>
 <div class="ov" id="ovSend"><div class="orbit" id="orbit"><div class="beam" id="beam"></div><img src="assets/logo-sm.png" alt="" class="orbitlogo"></div><div class="tx" id="sendTx">선택한 도구를 전송하는 중…</div><button class="skip" id="skipSend">건너뛰기</button></div>
 
-<script src="assets/config.js?v=r2e"></script>
-<script src="assets/bgfx.js?v=r2e" defer></script>
-<script src="assets/app.js?v=r2e"></script>
+<script src="assets/config.js?v=r2h"></script>
+<script src="assets/bgfx.js?v=r2h" defer></script>
+<script src="assets/app.js?v=r2h"></script>
 </body></html>
