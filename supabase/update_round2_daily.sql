@@ -106,8 +106,12 @@ begin
 end $$;
 
 
+-- ⑦ 실시간 결과 공개(영상·포스터에서 '실시간 결과 확인'을 안내하므로 켬)
+--    결과 화면에는 순위와 비율만 보이고 표 수·이름은 나오지 않아요. 다시 숨기려면 true를 false로 바꿔 실행.
+update ax_round set results_public = true where id = 'ax20-2';
+
 notify pgrst, 'reload schema';
 
 -- 확인: 최대 개수 7 · 기본키 (round_id, device, vote_day)
-select max_pick as "최대 개수" from ax_round where id = 'ax20-2';
+select max_pick as "최대 개수", results_public as "실시간 결과 공개" from ax_round where id = 'ax20-2';
 select pg_get_constraintdef(oid) as "기본키" from pg_constraint where conname = 'ax_anon_vote_pkey';
