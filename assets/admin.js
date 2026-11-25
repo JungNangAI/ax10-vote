@@ -15,8 +15,8 @@ const Demo = {
   ax_admin_overview: () => { const d = ds(); const t = {}; cands.forEach(c => t[c.no] = 0); const vs = Object.values(d.votes); vs.forEach(v => v.picks.forEach(n => { if (n in t) t[n]++; }));
     const dd = {}; vs.forEach(v => { const x = new Date(v.created_at || v.updated_at); const k = `${String(x.getMonth() + 1).padStart(2, '0')}.${String(x.getDate()).padStart(2, '0')}`; dd[k] = (dd[k] || 0) + 1; });
     const today = new Date().toDateString();
-    return { ok: true, round: { closes_at: d.closes, opens_at: d.opens || '2026-11-25T09:00:00+09:00', results_public: d.pub, max_pick: 10, anon: true, now: new Date().toISOString() }, ballots: vs.map(v => v.picks), members: [],
-      participants: vs.length, today: vs.filter(v => new Date(v.created_at || v.updated_at).toDateString() === today).length, daily: Object.entries(dd).sort().map(([k, n]) => ({ d: k, n })),
+    return { ok: true, round: { closes_at: d.closes, opens_at: d.opens || '2026-11-25T09:00:00+09:00', results_public: d.pub, max_pick: 7, anon: true, now: new Date().toISOString() }, ballots: vs.map(v => v.picks), members: [],
+      participants: new Set(vs.map(v => v.device)).size, ballots_n: vs.length, today: vs.filter(v => new Date(v.created_at || v.updated_at).toDateString() === today).length, daily: Object.entries(dd).sort().map(([k, n]) => ({ d: k, n })),
       tally: cands.map(c => ({ no: c.no, sub: c.sub, cat: c.cat, votes: t[c.no] })).sort((a, b) => b.votes - a.votes || a.no - b.no),
       comments: vs.filter(v => v.comment).map(v => ({ dept: '', name: '익명', comment: v.comment, picks: v.picks })) }; },
   ax_admin_set: ({ p_closes, p_opens, p_public }) => { const d = ds(); if (p_closes) d.closes = p_closes; if (p_opens) d.opens = p_opens; if (p_public != null) d.pub = p_public; dsave(d); return { ok: true }; },
@@ -42,8 +42,8 @@ async function load() {
   if (ANON) {
     const dl = ov.daily || [], mx = Math.max(1, ...dl.map(x => x.n));
     $('#seats').innerHTML = dl.length ? `<div class="daily">${dl.map(x => `<div class="dcol"><b>${x.n}</b><i style="height:${Math.max(4, Math.round(x.n / mx * 120))}px"></i><span>${esc(x.d)}</span></div>`).join('')}</div>` : '<div class="hint">아직 참여가 없어요</div>';
-    $('#notYet').innerHTML = `오늘 <b>${(ov.today || 0).toLocaleString()}명</b> 새로 참여 · 누적 <b>${v.toLocaleString()}명</b><br><span style="color:var(--mut)">익명 투표라 누가 했는지는 알 수 없어요. 한 휴대폰(브라우저)에 한 표예요.</span>`;
-    $('#nudge').value = `[AX10 전 직원 투표 안내]\n우리 구에 꼭 필요한 AI 업무도구 10종(AX10)을 전 직원이 함께 고르고 있어요.\nAI파트너스가 고른 20종 중 최대 ${ov.round.max_pick || 10}개를 골라 주세요. 이름 없이 익명, 3분이면 끝나요.\n▶ 투표하기: https://jungnangai.github.io/ax10-vote/\n(마감 ${new Date(ov.round.closes_at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', weekday: 'short', hour: 'numeric' })})\n문의: 기획예산과 중랑AI혁신팀 ☎2837`;
+    $('#notYet').innerHTML = `오늘 <b>${(ov.today || 0).toLocaleString()}표</b> · 누적 <b>${(ov.ballots_n ?? v).toLocaleString()}표</b> · 참여 휴대폰 <b>${v.toLocaleString()}대</b><br><span style="color:var(--mut)">익명 투표라 누가 했는지는 알 수 없어요. 한 휴대폰(브라우저)에서 하루에 한 표씩 낼 수 있어요.</span>`;
+    $('#nudge').value = `[AX10 전 직원 투표 안내]\n우리 구에 꼭 필요한 AI 업무도구 10종(AX10)을 전 직원이 함께 고르고 있어요.\nAI파트너스가 고른 20종 중 최대 ${ov.round.max_pick || 7}개를 골라 주세요. 이름 없이 익명, 하루에 한 번씩 참여할 수 있어요.\n▶ 투표하기: https://jungnangai.github.io/ax10-vote/\n(마감 ${new Date(ov.round.closes_at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', weekday: 'short', hour: 'numeric' })})\n문의: 기획예산과 중랑AI혁신팀 ☎2837`;
   } else {
   $('#seats').innerHTML = ms.map(m => `<div class="seat ${m.voted ? 'on' : ''}" title="${esc(m.dept)} ${esc(m.name)}${m.voted ? ' · 투표함' : ''}"></div>`).join('');
   const not = ms.filter(m => !m.voted);
@@ -167,7 +167,7 @@ function buildReport() {
   T.push(title, '', summary, '', '□ 투표 개요',
     ` ㅇ (기간) ${fd(ov.round.opens_at)} ~ ${fd(ov.round.closes_at)}`,
     ` ㅇ (대상) ${WHO}`,
-    ` ㅇ (방법) 자체 투표 사이트, 1인 최대 ${ov.round.max_pick || 7}개 복수 선택(1인 평균 ${avg}개)${ANON ? ', 이름 없이 휴대폰당 1표' : ''}`,
+    ` ㅇ (방법) 자체 투표 사이트, 1인 최대 ${ov.round.max_pick || 7}개 복수 선택(1인 평균 ${avg}개)${ANON ? `, 이름 없이 휴대폰당 하루 1표(누적 ${(ov.ballots_n ?? voted).toLocaleString()}표)` : ''}`,
     '', `□ 투표 결과 : 상위 ${NTOP}종 선정`);
   top.forEach(t => T.push(` ${String(t.rank).padStart(2)}위 ${t.no}. ${cj(t.no).orig} "${t.sub}" ${t.votes}표 (${CATN[t.cat]})`));
   if (tiesOut.length) T.push(` ※ ${NTOP}위 동점 ${tiesOut.length}종(${tiesOut.map(t => t.sub).join(', ')}) → 혁신팀 결정 필요`);

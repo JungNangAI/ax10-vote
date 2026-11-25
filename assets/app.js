@@ -28,6 +28,7 @@ function toast(t, ms = 1800) { const el = $('#toast'); el.textContent = t; el.cl
 // ───────── data layer (Supabase or demo) ─────────
 const sbRpc = async (fn, args) => { const r = await fetch(CFG.supabaseUrl.replace(/\/$/, '') + '/rest/v1/rpc/' + fn, { method: 'POST', headers: { apikey: CFG.supabaseKey, 'Content-Type': 'application/json' }, body: JSON.stringify(args || {}) }); const t = await r.text(); let d = null; try { d = t ? JSON.parse(t) : null; } catch (e) { d = t; } return r.ok ? { data: d, error: null } : { data: null, error: d || { message: 'HTTP ' + r.status } }; };
 const sb = DEMO ? null : { rpc: sbRpc };
+const dayKey = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10); // 한국 날짜(하루 한 표)
 const Demo = (() => {
   const db = store.get('demo', null) || { members: [], votes: {}, pub: false, closes: '2026-12-02T18:00:00+09:00' };
   if (!db.members.length) { const D = ['기획예산과', '재무과', '행정지원과', '민원여권과', '도시안전과', '건강증진과', '묵2동주민센터']; const N = ['김하늘', '이바다', '박구름', '최별', '정나래', '한결', '윤슬', '서아', '도윤', '하람', '지우', '은재', '유나', '시온'];
@@ -35,10 +36,10 @@ const Demo = (() => {
   const save = () => store.set('demo', db);
   let cands = [];
   return { setCands(c) { cands = c; }, db, save,
-    ax_round_info: () => ({ id: ROUND, title: 'AX20 → 10', max_pick: 10, opens_at: '2026-11-20T00:00:00+09:00', closes_at: db.closes, results_public: db.pub, anon: true, now: new Date().toISOString() }),
-    ax_anon_my: ({ p_device }) => db.votes[p_device] || null,
-    ax_anon_submit: ({ p_device, p_picks, p_comment }) => { db.votes[p_device] = { picks: p_picks, comment: p_comment || (db.votes[p_device] || {}).comment, device: p_device, updated_at: new Date().toISOString(), created_at: (db.votes[p_device] || {}).created_at || new Date().toISOString() }; save(); return { ok: true }; },
-    ax_anon_comment: ({ p_device, p_comment }) => { if (db.votes[p_device]) { db.votes[p_device].comment = p_comment; save(); } return { ok: !!db.votes[p_device] }; },
+    ax_round_info: () => ({ id: ROUND, title: 'AX20 → 10', max_pick: 7, opens_at: '2026-11-20T00:00:00+09:00', closes_at: db.closes, results_public: db.pub, anon: true, now: new Date().toISOString() }),
+    ax_anon_my: ({ p_device }) => db.votes[p_device + '|' + dayKey()] || null,
+    ax_anon_submit: ({ p_device, p_picks, p_comment }) => { const k = p_device + '|' + dayKey(); db.votes[k] = { picks: p_picks, comment: p_comment || (db.votes[k] || {}).comment, device: p_device, updated_at: new Date().toISOString(), created_at: (db.votes[k] || {}).created_at || new Date().toISOString() }; save(); return { ok: true }; },
+    ax_anon_comment: ({ p_device, p_comment }) => { const k = p_device + '|' + dayKey(); if (db.votes[k]) { db.votes[k].comment = p_comment; save(); } return { ok: !!db.votes[k] }; },
     ax_anon_note_save: ({ p_device, p_no, p_score, p_comment }) => Demo.ax_note_save({ p_member: p_device, p_no, p_score, p_comment }),
     ax_anon_my_notes: ({ p_device }) => Demo.ax_my_notes({ p_member: p_device }),
     ax_candidates: () => cands,
@@ -57,7 +58,7 @@ const Demo = (() => {
       const tc = {}; let tot = 0; Object.values(db.votes).forEach(v => { const c = {}; v.picks.forEach(n => { const k = (cands.find(x => x.no === n) || {}).cat; c[k] = (c[k] || 0) + 1; }); const s = Object.entries(c).sort((x, y) => y[1] - x[1]); if (!s.length) return; const k = s.length > 1 && s[0][1] === s[1][1] ? 'all' : s[0][0]; tc[k] = (tc[k] || 0) + 1; tot++; });
       const types = Object.fromEntries(Object.entries(tc).map(([k, v]) => [k, Math.round(v / Math.max(tot, 1) * 100)]));
       return { public: true, items: arr.map((a, i) => ({ no: a.no, rank: arr.findIndex(b => b.v === a.v) + 1, ratio: Math.round(a.v / mx * 100) })), types, comments: Object.values(db.votes).map(v => v.comment).filter(Boolean).slice(0, 12),
-        title: 'AX20 → 10', opens_at: '2026-11-25T09:00:00+09:00', closes_at: db.closes, max_pick: 10, anon: true, closed: new Date(db.closes) < new Date() }; } };
+        title: 'AX20 → 10', opens_at: '2026-11-25T09:00:00+09:00', closes_at: db.closes, max_pick: 7, anon: true, closed: new Date(db.closes) < new Date() }; } };
 })();
 window.AX_DEMO = Demo;
 const ANON_MAP = { ax_my_vote: 'ax_anon_my', ax_submit: 'ax_anon_submit', ax_comment: 'ax_anon_comment', ax_note_save: 'ax_anon_note_save', ax_my_notes: 'ax_anon_my_notes' };
@@ -130,7 +131,7 @@ async function choose(m) {
   if (draft && draft.length && (!mv || !mv.picks || draft.join() !== mv.picks.join())) { picks = draft.filter(n => byNo[n]).slice(0, MAX); restored = true; }
   if (mv && mv.comment) $('#cmt').value = mv.comment;
   const seen = store.get('booted_' + m.id, false);
-  if (!seen && fx.motion) await boot(m, !!(mv && mv.picks)); else if (mv && mv.picks) toast(m.anon ? '이미 투표했어요. 마감 전까지 고칠 수 있어요!' : `${m.name} 파트너님, 이미 투표했어요. 고칠 수 있어요!`, 2400);
+  if (!seen && fx.motion) await boot(m, !!(mv && mv.picks)); else if (mv && mv.picks) toast(m.anon ? '오늘은 이미 투표했어요. 오늘 낸 표는 고칠 수 있고, 내일 또 투표할 수 있어요!' : `${m.name} 파트너님, 이미 투표했어요. 고칠 수 있어요!`, 2400);
   store.set('booted_' + m.id, true);
   enterVote();
   if (restored) setTimeout(() => toast('고르던 내용을 이어서 보여 드려요. 제출해야 저장돼요!', 2600), 500);
@@ -143,7 +144,7 @@ function boot(m, voted) {
     const finish = () => { if (done) return; done = true; ov.classList.remove('on'); res(); };
     $('#skipBoot').onclick = finish;
     const step = () => { if (done) return; if (i < lines.length) { L.innerHTML += (i ? '<br>' : '') + lines[i++]; blip(500 + i * 120, .05, 'square', .03); setTimeout(step, 420); }
-      else { const t = m.anon ? (voted ? '다시 오셨네요! 고쳐도 돼요' : hello() + '! 꼭 필요한 도구를 골라 주세요') : `${m.name} 파트너님, ${voted ? '다시 오셨네요!' : hello() + '!'}`; let k = 0; const ty = setInterval(() => { H.textContent = t.slice(0, ++k); if (k >= t.length) { clearInterval(ty); buzz([10, 40, 10]); setTimeout(finish, 650); } }, 38); } };
+      else { const t = m.anon ? (voted ? '다시 오셨네요! 오늘 표를 고쳐도 돼요' : hello() + '! 꼭 필요한 도구를 골라 주세요') : `${m.name} 파트너님, ${voted ? '다시 오셨네요!' : hello() + '!'}`; let k = 0; const ty = setInterval(() => { H.textContent = t.slice(0, ++k); if (k >= t.length) { clearInterval(ty); buzz([10, 40, 10]); setTimeout(finish, 650); } }, 38); } };
     step();
   });
 }
@@ -340,7 +341,7 @@ function openConfirm() {
   const left = MAX - picks.length;
   $('#confSheet').innerHTML = `<button class="x" aria-label="닫기">✕</button><h3>이대로 보낼까요?</h3><div class="meta">내가 고른 AI 업무도구 <b style="color:#fff">${picks.length}개</b>${left > 0 ? ` · 아직 ${left}개 더 고를 수 있어요 (그대로 보내도 돼요)` : ''}</div>
     <div class="clist">${picks.map((n, i) => { const c = byNo[n]; return `<div class="crow" style="--c:${CAT[c.cat].c}"><i>${i + 1}</i><img src="${img(n)}" alt=""><div><b>${esc(c.sub)}</b><span>${esc(CAT[c.cat].name)} · ${esc(c.orig)}</span></div><button data-rm="${n}" aria-label="${esc(c.sub)} 빼기">빼기</button></div>`; }).join('')}</div>
-    <p class="cnote">마감(${fmtDate(info.closes_at).replace('~ ', '')}) 전까지는 다시 들어와 고칠 수 있어요.</p>
+    <p class="cnote">${ANON ? `오늘 낸 표는 오늘 안에 고칠 수 있고, 마감(${fmtDate(info.closes_at).replace('~ ', '')})까지 하루에 한 번씩 또 투표할 수 있어요.` : `마감(${fmtDate(info.closes_at).replace('~ ', '')}) 전까지는 다시 들어와 고칠 수 있어요.`}</p>
     <div class="cbtns"><button class="btn ghost" id="confMore">더 고르기</button><button class="btn" id="confSend">이대로 보내기 ✓</button></div>`;
   openModal('#mConf'); $('#confSheet .x').onclick = () => closeModal('#mConf'); $('#confMore').onclick = () => closeModal('#mConf');
   $$('#confSheet [data-rm]').forEach(b => b.onclick = () => { const n = +b.dataset.rm; toggle(n, document.querySelector(`.card[data-no="${n}"]`)); if (picks.length) openConfirm(); else { closeModal('#mConf'); toast('모두 뺐어요. 다시 골라 주세요'); } });
@@ -455,7 +456,7 @@ async function makeResultPoster(r) {
   g.textAlign = 'center';
   const tg = g.createLinearGradient(0, 430, 0, 520); tg.addColorStop(0, '#ffffff'); tg.addColorStop(1, '#22b8ff'); g.fillStyle = tg; g.shadowColor = 'rgba(34,230,255,.8)'; g.shadowBlur = 24; g.font = F(900, 96); g.fillText('AX20 → 10', W / 2, 510); g.shadowBlur = 0;
   g.fillStyle = '#fff'; g.font = F(900, 44); g.fillText('전 직원이 고른 AX10', W / 2, 575);
-  g.fillStyle = '#9fc6d8'; g.font = F(500, 24); const d0 = new Date(r.closes_at); g.fillText(`투표 ${r.closed ? '결과' : '중간 결과'} · ${d0.getMonth() + 1}. ${d0.getDate()}. 마감 · 1인 최대 ${r.max_pick || 10}개 · 익명`, W / 2, 615);
+  g.fillStyle = '#9fc6d8'; g.font = F(500, 24); const d0 = new Date(r.closes_at); g.fillText(`투표 ${r.closed ? '결과' : '중간 결과'} · ${d0.getMonth() + 1}. ${d0.getDate()}. 마감 · 1인 최대 ${r.max_pick || 7}개 · 익명`, W / 2, 615);
   g.textAlign = 'left';
   let y = 650;
   for (let i = 0; i < top.length; i++) { const it = top[i], cc = byNo[it.no] || {}, col = (CAT[cc.cat] || {}).c || '#22e6ff';
