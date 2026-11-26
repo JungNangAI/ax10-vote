@@ -131,7 +131,7 @@ async function choose(m) {
   if (draft && draft.length && (!mv || !mv.picks || draft.join() !== mv.picks.join())) { picks = draft.filter(n => byNo[n]).slice(0, MAX); restored = true; }
   if (mv && mv.comment) $('#cmt').value = mv.comment;
   const seen = store.get('booted_' + m.id, false);
-  if (!seen && fx.motion) await boot(m, !!(mv && mv.picks)); else if (mv && mv.picks) toast(m.anon ? '오늘은 이미 투표했어요. 오늘 낸 표는 고칠 수 있고, 내일 또 투표할 수 있어요!' : `${m.name} 파트너님, 이미 투표했어요. 고칠 수 있어요!`, 2400);
+  if (!seen && fx.motion) await boot(m, !!(mv && mv.picks)); else if (mv && mv.picks) toast(m.anon ? '오늘은 이미 투표했어요. 오늘 낸 표는 고칠 수 있어요!' : `${m.name} 파트너님, 이미 투표했어요. 고칠 수 있어요!`, 2400);
   store.set('booted_' + m.id, true);
   enterVote();
   if (restored) setTimeout(() => toast('고르던 내용을 이어서 보여 드려요. 제출해야 저장돼요!', 2600), 500);
@@ -144,7 +144,7 @@ function boot(m, voted) {
     const finish = () => { if (done) return; done = true; ov.classList.remove('on'); res(); };
     $('#skipBoot').onclick = finish;
     const step = () => { if (done) return; if (i < lines.length) { L.innerHTML += (i ? '<br>' : '') + lines[i++]; blip(500 + i * 120, .05, 'square', .03); setTimeout(step, 420); }
-      else { const t = m.anon ? (voted ? '다시 오셨네요! 오늘 표를 고쳐도 돼요' : hello() + '! 꼭 필요한 도구를 골라 주세요') : `${m.name} 파트너님, ${voted ? '다시 오셨네요!' : hello() + '!'}`; let k = 0; const ty = setInterval(() => { H.textContent = t.slice(0, ++k); if (k >= t.length) { clearInterval(ty); buzz([10, 40, 10]); setTimeout(finish, 650); } }, 38); } };
+      else { const t = m.anon ? (voted ? '다시 오셨네요! 오늘 표를 고쳐도 돼요' : hello() + '! AI와 함께하면 좋을 일을 골라 주세요') : `${m.name} 파트너님, ${voted ? '다시 오셨네요!' : hello() + '!'}`; let k = 0; const ty = setInterval(() => { H.textContent = t.slice(0, ++k); if (k >= t.length) { clearInterval(ty); buzz([10, 40, 10]); setTimeout(finish, 650); } }, 38); } };
     step();
   });
 }
@@ -152,7 +152,7 @@ function boot(m, voted) {
 // ───────── vote screen ─────────
 function enterVote() {
   $('#hi').innerHTML = me.anon ? `<img class="ap" src="assets/logo-sm.png" alt=""><b>익명 투표</b><span class="dept">· 이름을 받지 않아요</span>` : `<img class="ap" src="assets/logo-sm.png" alt=""><b>${esc(me.name)}</b><span>님</span><span class="dept">· ${esc(me.dept)}</span><button class="swap" id="bSwap">바꾸기</button>`;
-  $('#intro').innerHTML = `후보 <b>${cands.length}종</b> 중 꼭 필요한 도구를 <b>최대 ${MAX}개</b> 골라 주세요. ${matchMedia('(min-width:900px) and (hover:hover)').matches ? '그림에 마우스를 올리면 한 줄 설명, <b>ⓘ 자세히</b>를 누르면 전체 설명이 나와요.' : '오른쪽 막대로 위치를 볼 수 있어요.'}`;
+  $('#intro').innerHTML = `AX10 후보 <b>${cands.length}가지 일</b> 중 AI와 함께하면 좋을 일을 <b>최대 ${MAX}가지</b> 골라 주세요. ${matchMedia('(min-width:900px) and (hover:hover)').matches ? '그림에 마우스를 올리면 한 줄 설명, <b>ⓘ 자세히</b>를 누르면 전체 설명이 나와요.' : '오른쪽 막대로 위치를 볼 수 있어요.'}`;
   if ($('#bSwap')) $('#bSwap').onclick = () => { me = null; store.set('me', null); picks = []; show('sWho'); };
   renderTabs(); renderCards(); renderCore(); show('sVote'); $('#rail').classList.add('on'); updateRail();
 }
@@ -296,8 +296,8 @@ function openInfo(c, ro) {
     ${c.feas ? `<div class="feas"><b>만들기</b><span>난이도 ${esc(c.feas.level)}</span><span>${esc(c.feas.period)}</span><span>${esc(c.feas.form)}</span></div>` : ''}
     ${ro ? `<div class="rres">${ro.rank[c.no] ? `<b>${ro.rank[c.no]}위</b>` : ''}${ro.rank[c.no] && ro.rank[c.no] <= 10 ? '<span>AX10에 들었어요</span>' : ''}</div>` : `<div class="rate"><b>이 도구, 우리 구에 얼마나 중요할까요?</b><span class="rs">고르지 않아도 평가할 수 있어요</span>
       <div class="stars" role="radiogroup" aria-label="중요도">${[1, 2, 3, 4, 5].map(k => `<button data-s="${k}" role="radio" aria-label="${k}점">★</button>`).join('')}<em id="slabel"></em></div>
-      <textarea id="noteTxt" maxlength="300" rows="2" placeholder="이 도구에 대한 의견을 자유롭게 남겨 주세요 (선택)"></textarea><div class="nsave" id="nsave"></div></div>
-    <button class="btn ${on ? 'ghost' : ''}" id="infoPick">${on ? '고른 것에서 빼기' : '이 도구 고르기'}</button>`}`;
+      <textarea id="noteTxt" maxlength="300" rows="2" placeholder="이 일에 대한 의견을 자유롭게 남겨 주세요 (선택)"></textarea><div class="nsave" id="nsave"></div></div>
+    <button class="btn ${on ? 'ghost' : ''}" id="infoPick">${on ? '고른 것에서 빼기' : '이 일 고르기'}</button>`}`;
   if ($('#mInfo').classList.contains('on')) { $('#infoSheet').scrollTop = 0; } else openModal('#mInfo');
   $('#infoSheet .x').onclick = () => closeModal('#mInfo');
   const go = d => { const t = order[oi + d]; if (t == null) return; if (noteT) { clearTimeout(noteT); noteT = null; saveNote(c.no); } buzz(5); openInfo(byNo[t], ro); };
@@ -339,9 +339,9 @@ $('#bReco').onclick = () => {
 $('#bGo').onclick = () => { if (picks.length) openConfirm(); };
 function openConfirm() {
   const left = MAX - picks.length;
-  $('#confSheet').innerHTML = `<button class="x" aria-label="닫기">✕</button><h3>이대로 보낼까요?</h3><div class="meta">내가 고른 AI 업무도구 <b style="color:#fff">${picks.length}개</b>${left > 0 ? ` · 아직 ${left}개 더 고를 수 있어요 (그대로 보내도 돼요)` : ''}</div>
+  $('#confSheet').innerHTML = `<button class="x" aria-label="닫기">✕</button><h3>이대로 보낼까요?</h3><div class="meta">내가 고른 일 <b style="color:#fff">${picks.length}가지</b>${left > 0 ? ` · 아직 ${left}개 더 고를 수 있어요 (그대로 보내도 돼요)` : ''}</div>
     <div class="clist">${picks.map((n, i) => { const c = byNo[n]; return `<div class="crow" style="--c:${CAT[c.cat].c}"><i>${i + 1}</i><img src="${img(n)}" alt=""><div><b>${esc(c.sub)}</b><span>${esc(CAT[c.cat].name)} · ${esc(c.orig)}</span></div><button data-rm="${n}" aria-label="${esc(c.sub)} 빼기">빼기</button></div>`; }).join('')}</div>
-    <p class="cnote">${ANON ? `오늘 낸 표는 오늘 안에 고칠 수 있고, 마감(${fmtDate(info.closes_at).replace('~ ', '')})까지 하루에 한 번씩 또 투표할 수 있어요.` : `마감(${fmtDate(info.closes_at).replace('~ ', '')}) 전까지는 다시 들어와 고칠 수 있어요.`}</p>
+    <p class="cnote">${ANON ? `오늘 낸 표는 오늘 안에 고칠 수 있어요.` : `마감(${fmtDate(info.closes_at).replace('~ ', '')}) 전까지는 다시 들어와 고칠 수 있어요.`}</p>
     <div class="cbtns"><button class="btn ghost" id="confMore">더 고르기</button><button class="btn" id="confSend">이대로 보내기 ✓</button></div>`;
   openModal('#mConf'); $('#confSheet .x').onclick = () => closeModal('#mConf'); $('#confMore').onclick = () => closeModal('#mConf');
   $$('#confSheet [data-rm]').forEach(b => b.onclick = () => { const n = +b.dataset.rm; toggle(n, document.querySelector(`.card[data-no="${n}"]`)); if (picks.length) openConfirm(); else { closeModal('#mConf'); toast('모두 뺐어요. 다시 골라 주세요'); } });
@@ -353,7 +353,7 @@ async function doSubmit() {
   let skip = false; $('#skipSend').onclick = () => { skip = true; };
   const req = rpc('ax_submit', { p_round: ROUND, p_member: me.id, p_picks: picks, p_comment: null, p_device: device }).catch(e => ({ ok: false, msg: '연결이 불안정해요. 잠시 뒤 다시 제출해 주세요.' }));
   if (fx.motion) {
-    ov.classList.add('on'); $('#sendTx').textContent = '선택한 도구를 전송하는 중…'; buzz(10); blip(520, .08);
+    ov.classList.add('on'); $('#sendTx').textContent = '고른 일을 전송하는 중…'; buzz(10); blip(520, .08);
     const els = picks.map((n, i) => { const im = new Image(); im.src = img(n); orb.appendChild(im); return im; });
     const t0 = performance.now();
     await new Promise(res => { const f = t => { const k = (t - t0) / 1000; els.forEach((im, i) => { const a = k * 2.4 + i / els.length * Math.PI * 2, r = 105 * Math.min(1, k * 1.5); im.style.transform = `translate(${Math.cos(a) * r}px,${Math.sin(a) * r * .55}px) scale(${.6 + .4 * Math.min(1, k * 2)})`; });
@@ -403,7 +403,7 @@ async function makeCard(T) {
   g.fillStyle = '#9fc6d8'; g.font = F(700, 34); g.fillText(me.anon ? (() => { const d = new Date(); return `${d.getMonth() + 1}월 ${d.getDate()}일 투표 참여`; })() : me.dept, 500, 305);
   g.fillStyle = T.c; g.font = F(900, 50); g.fillText(T.type, 500, 395);
   g.fillStyle = '#d6ecf6'; g.font = F(500, 26); g.fillText(T.desc, 500, 440);
-  g.fillStyle = '#ffbf4a'; g.font = F(900, 40); g.fillText(`내가 고른 AI 업무도구 ${picks.length}`, 80, 580);
+  g.fillStyle = '#ffbf4a'; g.font = F(900, 40); g.fillText(`내가 고른 AX10 후보 ${picks.length}`, 80, 580);
   for (let i = 0; i < picks.length; i++) { const cc = byNo[picks[i]], y = 612 + i * 90, col = CAT[cc.cat].c;
     g.fillStyle = 'rgba(14,40,78,.85)'; g.fillRect(80, y, W - 160, 76); g.fillStyle = col; g.fillRect(80, y, 10, 76);
     const ci = await loadImg(img(cc.no)); if (ci) g.drawImage(ci, 100, y + 2, 72, 72);
