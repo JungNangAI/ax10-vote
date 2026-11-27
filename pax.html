@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>모두의 공공AX 사례 아카이브로 이동</title>
+</head>
+<body style="margin:0;background:#00559C;color:#fff;font-family:'Malgun Gothic',sans-serif;text-align:center">
+<div style="padding:80px 20px">
+  <div style="font-size:15px;letter-spacing:2px">PUBLIC SECTOR AX RECORD</div>
+  <div style="font-size:30px;font-weight:bold;margin:14px 0 10px">모두의 공공AX 사례 아카이브</div>
+  <div style="font-size:16px">전종홍 박사 큐레이션 · 잠시 후 자동으로 이동합니다</div>
+  <a id="go" href="https://hollobit.github.io/PAX/" style="display:inline-block;margin:28px 0 14px;padding:18px 40px;border-radius:40px;background:#fff;color:#00559C;font-size:22px;font-weight:bold;text-decoration:none">아카이브 열기</a>
+  <div id="tip" style="font-size:14px;opacity:.85"></div>
+</div>
+<script>
+(function () {
+  var url = 'https://hollobit.github.io/PAX/';
+  var ie = !!document.documentMode || /MSIE |Trident\//.test(navigator.userAgent);
+  if (ie) {
+    // 새올에서 연 창(IE 모드)에서는 화면이 깨지므로 Edge로 다시 엽니다.
+    document.getElementById('go').href = 'microsoft-edge:' + url;
+    document.getElementById('go').innerHTML = 'Edge로 아카이브 열기';
+    document.getElementById('tip').innerHTML = '자동으로 열리지 않으면 위 버튼을 눌러 주세요.';
+    setTimeout(function () { try { window.location.href = 'microsoft-edge:' + url; } catch (e) {} }, 600);
+  } else {
+    try { window.top.location.replace(url); } catch (e) { window.location.replace(url); }
+  }
+})();
+</script>
+</body>
+</html>
