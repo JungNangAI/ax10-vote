@@ -11,7 +11,7 @@
 <link rel="icon" href="assets/favicon.png"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/style.css?v=r2m">
-<style>#bStart{font-size:24px;font-weight:900;padding:22px 16px;margin:16px 0 14px;letter-spacing:.02em;animation:startPulse 1.6s ease-in-out infinite}@keyframes startPulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(255,191,74,.0),0 10px 30px rgba(34,230,255,.25)}50%{transform:scale(1.02);box-shadow:0 0 0 12px rgba(255,191,74,.20),0 10px 36px rgba(34,230,255,.45)}}@media (prefers-reduced-motion:reduce){#bStart{animation:none}}</style>
+<style>.btn.live{margin:0 0 16px;padding:16px;font-size:19px;font-weight:900;color:#fff;border:2px solid #ffbf4a;background:rgba(255,191,74,.12);box-shadow:0 0 18px rgba(255,191,74,.28);position:relative;overflow:hidden}.btn.live b{font-family:ui-monospace,monospace;color:#ff5a7a;letter-spacing:.08em;margin:0 10px 0 8px}.btn.live .livedot{display:inline-block;width:12px;height:12px;border-radius:50%;background:#ff5a7a;animation:liveBlink 1s ease-in-out infinite;vertical-align:middle}.btn.live::after{content:"";position:absolute;top:0;bottom:0;left:-80px;width:80px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-22deg);animation:drlRun 2.6s linear infinite}@keyframes liveBlink{50%{opacity:.25}}@media (prefers-reduced-motion:reduce){.btn.live::after,.btn.live .livedot{animation:none}}#bStart{font-size:24px;font-weight:900;padding:22px 16px;margin:16px 0 12px;letter-spacing:.02em;animation:startPulse 1.6s ease-in-out infinite}@keyframes startPulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(255,191,74,.0),0 10px 30px rgba(34,230,255,.25)}50%{transform:scale(1.02);box-shadow:0 0 0 12px rgba(255,191,74,.20),0 10px 36px rgba(34,230,255,.45)}}@media (prefers-reduced-motion:reduce){#bStart{animation:none}}</style>
 </head><body>
 <script>
 /* 새올(IE 모드) 등 옛 브라우저에서 열리면 Edge로 다시 열기 */
@@ -46,6 +46,7 @@
     <div class="sub">AI와 함께하면 좋을 일, <b>AX10</b>을 골라 주세요</div>
     <div style="margin-top:6px;text-align:center;font-weight:900;font-size:15px;letter-spacing:-.01em;color:#fff">새로운 연결<span style="color:#ffbf4a">,</span> 다른 경험</div>
     <button class="btn" id="bStart">투표 시작</button>
+    <button class="btn ghost live" id="bResults" style="display:none"><i class="livedot"></i><b>LIVE</b>실시간 결과 보기 ›</button>
     <ol class="story" aria-label="지금까지 온 길"><li><b>100+</b><span>공공AX 사례<br>아카이브</span></li><li><b>30</b><span>전략<br>보고</span></li><li><b>20</b><span>AI파트너스<br>38명 선정</span></li><li class="now"><b>10</b><span>전 직원<br>지금!</span></li></ol>
     <div class="ro">
       <div class="gold"><small>투표 기간</small><strong id="period">~ 12. 2.(수) 18시</strong></div>
@@ -57,7 +58,6 @@
     <ol class="guide"><li><b>1</b>투표 시작</li><li><b>2</b>최대 7개 고르기</li><li><b>3</b>제출하면 끝</li></ol>
     <div class="count" id="count" aria-live="polite"></div>
     <button class="btn ghost" id="bResume" style="display:none;margin-top:10px"></button>
-    <button class="btn ghost" id="bResults" style="display:none;margin-top:10px">결과 보기</button>
     <p class="privacy">이름·부서는 받지 않아요. 고른 번호와 시각만 저장돼요.<br>낸 표는 그날 안에 고칠 수 있어요.<br>문의 기획예산과 중랑AI혁신팀 ☎ 2837</p>
     <div id="demoTag"></div>
   </section>
@@ -98,7 +98,7 @@
     <p style="font-size:12px;color:var(--mut);margin-top:6px">저장이 안 되면 카드 이미지를 길게 눌러 저장해 주세요.</p>
     <h3 style="margin-top:22px;font-size:17px">가장 기대되는 일에 한마디 <small style="color:var(--mut);font-weight:500">(선택)</small></h3>
     <div class="say1"><input class="field" id="cmt" maxlength="200" placeholder="이 일, AI와 이렇게 하고 싶어요"><button id="bCmt">남기기</button></div>
-    <button class="btn ghost" id="bResults2" style="display:none">결과 보기</button>
+    <button class="btn ghost live" id="bResults2" style="display:none"><i class="livedot"></i><b>LIVE</b>실시간 결과 보기 ›</button>
   </section>
 
   <!-- ⑤ 결과 -->
