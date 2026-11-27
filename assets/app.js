@@ -418,32 +418,50 @@ $('#bCmt').onclick = async () => { const v = $('#cmt').value.trim(); if (!v) { t
 
 // ───────── results reveal ─────────
 async function checkResults() { const r = await rpc('ax_results', { p_round: ROUND }).catch(() => null); const pub = !!(r && r.public); $('#bResults').style.display = pub ? 'block' : 'none'; $('#bResults2').style.display = pub ? 'block' : 'none'; return r; }
+let resLive = null, resTick = null, resClose = null;
+function leftText() { if (!resClose) return ''; const left = new Date(resClose) - new Date(); if (left <= 0) return '마감'; const p2 = n => String(n).padStart(2, '0'); const d = Math.floor(left / 864e5), h = Math.floor(left % 864e5 / 36e5), m = Math.floor(left % 36e5 / 6e4), sc = Math.floor(left % 6e4 / 1e3); return `${d > 0 ? d + '일 ' : ''}${p2(h)}:${p2(m)}:${p2(sc)}`; }
+function rollTo(el, n, delay) { if (!el) return; const prev = +el.dataset.n; el.dataset.n = n; if (!fx.motion) { el.textContent = n; return; }
+  setTimeout(() => { const len = String(n).length, t0 = performance.now(); const box = el.closest('.rsg>div'); if (box) box.classList.add('roll');
+    const iv = setInterval(() => { if (performance.now() - t0 > 750) { clearInterval(iv); el.textContent = n; if (box) { box.classList.remove('roll'); box.classList.add('hit'); setTimeout(() => box.classList.remove('hit'), 500);
+          if (!isNaN(prev) && n > prev) { const up = document.createElement('u'); up.className = 'rup'; up.textContent = '+' + (n - prev); box.appendChild(up); setTimeout(() => up.remove(), 1600); } } return; }
+      el.textContent = Array.from({ length: len }, () => Math.floor(Math.random() * 10)).join(''); }, 45); }, delay || 0); }
+function sumData(r) { const its = r.items.slice(0, cands.length); const tot = its.reduce((x, y) => x + (y.votes || 0), 0), top = its[0], cutIt = its[Math.min(9, its.length - 1)], nxt = its[10];
+  const lv = its.filter(x => byNo[x.no].cat === 'L').reduce((x, y) => x + y.votes, 0);
+  return { its, tot, top, cut: cutIt.votes, cutNote: nxt ? (cutIt.votes === nxt.votes ? '11위와 동률' : `11위와 ${cutIt.votes - nxt.votes}표 차`) : '', lv, ov: tot - lv }; }
+function stampText() { const now = new Date(), p2 = n => String(n).padStart(2, '0'); return `${now.getMonth() + 1}. ${now.getDate()}. ${p2(now.getHours())}:${p2(now.getMinutes())}:${p2(now.getSeconds())} 기준`; }
+function renderSum(r, first) { const box = $('#resList'); let sm = $('#resSum'); if (!sm) { sm = document.createElement('div'); sm.id = 'resSum'; box.parentNode.insertBefore(sm, box); }
+  const hasV = r.items.length && r.items[0].votes != null; if (!hasV) { sm.innerHTML = ''; return false; }
+  const d = sumData(r); resClose = r.closes_at;
+  if (first || !sm.querySelector('.rsg')) {
+    sm.innerHTML = `<div class="rsh"><span class="livedot"></span><b>LIVE</b><span>현재 집계</span><em id="rsStamp">${stampText()}</em></div>
+      <div class="rsg"><div><small>총 득표</small><strong><b data-k="tot" data-n="${d.tot}">0</b>표</strong></div>
+      ${r.ballots != null ? `<div><small>투표 참여</small><strong><b data-k="bal" data-n="${r.ballots}">0</b>회</strong></div>` : `<div><small>후보</small><strong><b data-k="cnd" data-n="${d.its.length}">0</b>가지 일</strong></div>`}
+      <div class="gold"><small>현재 1위</small><strong class="nm" id="rsTop">${esc(byNo[d.top.no].sub)}</strong><i><b data-k="topv" data-n="${d.top.votes}">0</b>표</i></div>
+      <div class="gold"><small>AX10 커트라인(10위)</small><strong><b data-k="cut" data-n="${d.cut}">0</b>표</strong><i id="rsCut">${d.cutNote}</i></div>
+      <div><small>Life 5가지</small><strong><b data-k="lv" data-n="${d.lv}">0</b>표</strong></div>
+      <div><small>Office 15가지</small><strong><b data-k="ov" data-n="${d.ov}">0</b>표</strong></div></div>
+      <div class="rsf">마감까지 <b id="rsLeft">${leftText()}</b> · ${fmtDate(r.closes_at).replace('~ ', '')} 마감</div>`;
+    sm.querySelectorAll('b[data-n]').forEach(e => countUp(e, +e.dataset.n)); return true; }
+  const val = { tot: d.tot, bal: r.ballots, cnd: d.its.length, topv: d.top.votes, cut: d.cut, lv: d.lv, ov: d.ov };
+  sm.querySelectorAll('b[data-k]').forEach((e, i) => rollTo(e, val[e.dataset.k], i * 110));
+  const nm = $('#rsTop'), nn = byNo[d.top.no].sub; nm.classList.remove('blink'); void nm.offsetWidth; nm.textContent = nn; nm.classList.add('blink');
+  $('#rsCut').textContent = d.cutNote; $('#rsStamp').textContent = stampText();
+  const mx = Math.max(1, ...d.its.map(x => x.votes));
+  d.its.forEach(it => { const row = document.querySelector(`#resList .rbar[data-no="${it.no}"]`); if (!row) return; row.querySelector('.bar i').style.width = Math.max(8, Math.round(it.votes / mx * 100)) + '%'; const vb = row.querySelector('.rv b'); if (vb && +vb.textContent !== it.votes) { vb.textContent = it.votes; row.classList.remove('bump'); void row.offsetWidth; row.classList.add('bump'); } });
+  return true; }
+function startResLive() { clearInterval(resLive); clearInterval(resTick);
+  resTick = setInterval(() => { if (!$('#sRes').classList.contains('on')) { clearInterval(resTick); clearInterval(resLive); return; } const e = $('#rsLeft'); if (e) e.textContent = leftText(); }, 1000);
+  resLive = setInterval(async () => { if (!$('#sRes').classList.contains('on')) { clearInterval(resTick); clearInterval(resLive); return; } if (document.hidden) return;
+    const r = await rpc('ax_results', { p_round: ROUND }).catch(() => null); if (r && r.public && r.items) renderSum(r, false); }, 7000); }
 function countUp(el, n) { if (!el) return; if (!fx.motion) { el.textContent = n; return; } const t0 = performance.now(), D = 900; const st = t => { const p = Math.min(1, (t - t0) / D); el.textContent = Math.round(n * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(st); }; requestAnimationFrame(st); }
 async function showResults() {
   const r = await checkResults(); if (!r || !r.public) { toast('결과는 마감 후 공개돼요'); return; }
   show('sRes'); const box = $('#resList'); box.innerHTML = '';
-  { let sm = $('#resSum'); if (!sm) { sm = document.createElement('div'); sm.id = 'resSum'; box.parentNode.insertBefore(sm, box); }
-    const its = r.items.slice(0, cands.length); const hasV = its.length && its[0].votes != null;
-    if (!hasV) sm.innerHTML = ''; else {
-      const tot = its.reduce((x, y) => x + (y.votes || 0), 0), top = its[0], cutIt = its[Math.min(9, its.length - 1)], nxt = its[10];
-      const dl = new Date(r.closes_at), now = new Date(), left = dl - now; const dd = Math.floor(left / 864e5), hh = Math.floor(left % 864e5 / 36e5);
-      const leftTx = left <= 0 ? '마감' : (dd > 0 ? `${dd}일 ${hh}시간` : `${hh}시간 ${Math.floor(left % 36e5 / 6e4)}분`);
-      const p2 = n => String(n).padStart(2, '0'); const stamp = `${now.getMonth() + 1}. ${now.getDate()}. ${p2(now.getHours())}:${p2(now.getMinutes())} 기준`;
-      const lv = its.filter(x => byNo[x.no].cat === 'L').reduce((x, y) => x + y.votes, 0), ov = tot - lv;
-      sm.innerHTML = `<div class="rsh"><span class="livedot"></span><b>LIVE</b><span>현재 집계</span><em>${stamp}</em></div>
-        <div class="rsg"><div><small>총 득표</small><strong><b data-n="${tot}">0</b>표</strong></div>
-        ${r.ballots != null ? `<div><small>투표 참여</small><strong><b data-n="${r.ballots}">0</b>회</strong></div>` : `<div><small>후보</small><strong><b data-n="${its.length}">0</b>가지 일</strong></div>`}
-        <div class="gold"><small>현재 1위</small><strong class="nm">${esc(byNo[top.no].sub)}</strong><i>${top.votes}표</i></div>
-        <div class="gold"><small>AX10 커트라인(10위)</small><strong><b data-n="${cutIt.votes}">0</b>표</strong><i>${nxt ? (cutIt.votes === nxt.votes ? '11위와 동률' : `11위와 ${cutIt.votes - nxt.votes}표 차`) : ''}</i></div>
-        <div><small>Life 5가지</small><strong><b data-n="${lv}">0</b>표</strong></div>
-        <div><small>Office 15가지</small><strong><b data-n="${ov}">0</b>표</strong></div></div>
-        <div class="rsf">마감까지 <b>${leftTx}</b> · ${fmtDate(r.closes_at).replace('~ ', '')} 마감</div>`;
-      sm.querySelectorAll('b[data-n]').forEach(e => countUp(e, +e.dataset.n));
-    } }
+  renderSum(r, true); startResLive();
   const items = r.items.slice(0, cands.length).reverse();
   const resRO = { order: r.items.slice(0, cands.length).map(x => x.no), rank: Object.fromEntries(r.items.map(x => [x.no, x.rank])) };
   for (let i = 0; i < items.length; i++) {
-    const it = items[i], c = byNo[it.no]; const d = document.createElement('div'); d.className = 'rbar' + (it.rank <= 10 ? ' top' : '') + (it.rank <= 3 ? ' top3' : ''); d.style.setProperty('--c', CAT[c.cat].c); d.style.setProperty('--dl', (i % 5) * 0.35 + 's');
+    const it = items[i], c = byNo[it.no]; const d = document.createElement('div'); d.className = 'rbar' + (it.rank <= 10 ? ' top' : '') + (it.rank <= 3 ? ' top3' : ''); d.style.setProperty('--c', CAT[c.cat].c); d.style.setProperty('--dl', (i % 5) * 0.35 + 's'); d.dataset.no = it.no;
     d.innerHTML = `<div class="rk">${it.rank}</div><img src="${img(it.no)}" alt=""><div class="bar"><i></i><span>${esc(c.sub)}</span>${it.votes != null ? `<em class="rv"><b>0</b>표</em>` : ''}</div><span class="rmore" aria-hidden="true">›</span>`;
     d.tabIndex = 0; d.setAttribute('role', 'button'); d.setAttribute('aria-label', `${it.rank}위 ${c.sub} 자세히 보기`);
     d.onclick = () => openInfo(c, resRO); d.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openInfo(c, resRO); } };

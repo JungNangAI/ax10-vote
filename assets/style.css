@@ -425,3 +425,15 @@ body.nomo .pilot .on:before{animation:none}
 .rsg i{font-style:normal;font-size:12px;font-weight:700;color:#ffbf4a}
 .rsf{margin-top:8px;text-align:center;font-size:13px;color:var(--mut)}.rsf b{color:#fff}
 @media (min-width:900px){.rsg{grid-template-columns:repeat(3,1fr)}}
+
+/* 현재 집계: 7초마다 숫자 구르기 */
+.rsg>div{position:relative;transition:box-shadow .25s,border-color .25s}
+.rsg>div.roll strong b,.rsg>div.roll i b{color:#7ff3ff;text-shadow:0 0 10px rgba(34,230,255,.9)}
+.rsg>div.hit{box-shadow:0 0 0 2px #fff,0 0 22px rgba(34,230,255,.75);border-color:#fff}
+.rsg .rup{position:absolute;right:12px;top:10px;text-decoration:none;font-weight:900;font-size:15px;color:#7dffb0;animation:rupUp 1.6s ease-out forwards}
+.rsg strong.nm.blink{animation:nmBlink .7s ease-out}
+.rsf b{font-variant-numeric:tabular-nums;font-size:15px}
+.rbar.bump .rv b{animation:rvBump .6s ease-out}
+@keyframes rupUp{0%{opacity:0;transform:translateY(8px)}20%{opacity:1}100%{opacity:0;transform:translateY(-14px)}}
+@keyframes nmBlink{0%{opacity:.2;filter:blur(3px)}100%{opacity:1;filter:none}}
+@keyframes rvBump{0%{transform:scale(1.5);color:#7dffb0}100%{transform:none}}
