@@ -408,3 +408,20 @@ body.nomo .pilot .on:before{animation:none}
 @keyframes drlGlow{0%,100%{filter:brightness(1)}50%{filter:brightness(1.22)}}
 @keyframes rowPop{0%{transform:translateX(-26px) scale(.96)}100%{transform:none}}
 @media (prefers-reduced-motion:reduce){.rbar .bar i::after,.rbar.top .bar,.rbar.on{animation:none}}
+
+/* 결과 보기: 현재 집계 정리표 */
+#resSum{margin:6px 0 16px}
+#resSum:empty{display:none}
+.rsh{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:900;font-size:16px}
+.rsh b{font-family:ui-monospace,monospace;color:#ff5a7a;letter-spacing:.08em}
+.rsh em{margin-left:auto;font-style:normal;font-weight:600;font-size:12px;color:var(--mut)}
+.rsh .livedot{display:inline-block;width:11px;height:11px;border-radius:50%;background:#ff5a7a;animation:liveBlink 1s ease-in-out infinite}
+.rsg{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.rsg>div{padding:11px 12px;border-radius:14px;border:1px solid rgba(34,230,255,.45);background:rgba(6,24,48,.72);display:flex;flex-direction:column;gap:2px;min-width:0}
+.rsg>div.gold{border-color:#ffbf4a;box-shadow:0 0 14px rgba(255,191,74,.22)}
+.rsg small{font-size:12px;color:var(--mut);font-weight:600}
+.rsg strong{font-size:15px;font-weight:900}.rsg strong b{font-size:26px;margin-right:2px;font-variant-numeric:tabular-nums}
+.rsg strong.nm{font-size:16px;line-height:1.25;color:#ffbf4a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rsg i{font-style:normal;font-size:12px;font-weight:700;color:#ffbf4a}
+.rsf{margin-top:8px;text-align:center;font-size:13px;color:var(--mut)}.rsf b{color:#fff}
+@media (min-width:900px){.rsg{grid-template-columns:repeat(3,1fr)}}

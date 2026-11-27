@@ -422,6 +422,24 @@ function countUp(el, n) { if (!el) return; if (!fx.motion) { el.textContent = n;
 async function showResults() {
   const r = await checkResults(); if (!r || !r.public) { toast('결과는 마감 후 공개돼요'); return; }
   show('sRes'); const box = $('#resList'); box.innerHTML = '';
+  { let sm = $('#resSum'); if (!sm) { sm = document.createElement('div'); sm.id = 'resSum'; box.parentNode.insertBefore(sm, box); }
+    const its = r.items.slice(0, cands.length); const hasV = its.length && its[0].votes != null;
+    if (!hasV) sm.innerHTML = ''; else {
+      const tot = its.reduce((x, y) => x + (y.votes || 0), 0), top = its[0], cutIt = its[Math.min(9, its.length - 1)], nxt = its[10];
+      const dl = new Date(r.closes_at), now = new Date(), left = dl - now; const dd = Math.floor(left / 864e5), hh = Math.floor(left % 864e5 / 36e5);
+      const leftTx = left <= 0 ? '마감' : (dd > 0 ? `${dd}일 ${hh}시간` : `${hh}시간 ${Math.floor(left % 36e5 / 6e4)}분`);
+      const p2 = n => String(n).padStart(2, '0'); const stamp = `${now.getMonth() + 1}. ${now.getDate()}. ${p2(now.getHours())}:${p2(now.getMinutes())} 기준`;
+      const lv = its.filter(x => byNo[x.no].cat === 'L').reduce((x, y) => x + y.votes, 0), ov = tot - lv;
+      sm.innerHTML = `<div class="rsh"><span class="livedot"></span><b>LIVE</b><span>현재 집계</span><em>${stamp}</em></div>
+        <div class="rsg"><div><small>총 득표</small><strong><b data-n="${tot}">0</b>표</strong></div>
+        ${r.ballots != null ? `<div><small>투표 참여</small><strong><b data-n="${r.ballots}">0</b>회</strong></div>` : `<div><small>후보</small><strong><b data-n="${its.length}">0</b>가지 일</strong></div>`}
+        <div class="gold"><small>현재 1위</small><strong class="nm">${esc(byNo[top.no].sub)}</strong><i>${top.votes}표</i></div>
+        <div class="gold"><small>AX10 커트라인(10위)</small><strong><b data-n="${cutIt.votes}">0</b>표</strong><i>${nxt ? (cutIt.votes === nxt.votes ? '11위와 동률' : `11위와 ${cutIt.votes - nxt.votes}표 차`) : ''}</i></div>
+        <div><small>Life 5가지</small><strong><b data-n="${lv}">0</b>표</strong></div>
+        <div><small>Office 15가지</small><strong><b data-n="${ov}">0</b>표</strong></div></div>
+        <div class="rsf">마감까지 <b>${leftTx}</b> · ${fmtDate(r.closes_at).replace('~ ', '')} 마감</div>`;
+      sm.querySelectorAll('b[data-n]').forEach(e => countUp(e, +e.dataset.n));
+    } }
   const items = r.items.slice(0, cands.length).reverse();
   const resRO = { order: r.items.slice(0, cands.length).map(x => x.no), rank: Object.fromEntries(r.items.map(x => [x.no, x.rank])) };
   for (let i = 0; i < items.length; i++) {

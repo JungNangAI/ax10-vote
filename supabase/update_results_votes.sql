@@ -1,4 +1,4 @@
--- AX10 결과 보기에 후보별 득표수(votes)를 함께 내려줍니다. 여러 번 실행해도 괜찮아요.
+-- AX10 결과 보기에 후보별 득표수(votes)와 투표 참여 횟수(ballots)를 함께 내려줍니다. 여러 번 실행해도 괜찮아요.
 create or replace function ax_results(p_round text) returns json
 language plpgsql security definer set search_path = public as $$
 declare r ax_round; items json; types json; cmts json; vr record; c record; best text; bestn int; tie boolean; tot int := 0;
@@ -28,7 +28,7 @@ begin
     where coalesce(comment, '') <> '' order by at desc limit 12) q;
   return json_build_object('public', true, 'items', coalesce(items, '[]'), 'types', coalesce(types, '{}'), 'comments', coalesce(cmts, '[]'),
     'title', r.title, 'opens_at', r.opens_at, 'closes_at', r.closes_at, 'max_pick', r.max_pick, 'anon', coalesce(r.anon, false),
-    'closed', now() > r.closes_at);
+    'closed', now() > r.closes_at, 'ballots', nb);
 end $$;
 
 notify pgrst, 'reload schema';
