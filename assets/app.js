@@ -435,7 +435,7 @@ function renderSum(r, first) { const box = $('#resList'); let sm = $('#resSum');
   if (first || !sm.querySelector('.rsg')) {
     sm.innerHTML = `<div class="rsh"><span class="livedot"></span><b>LIVE</b><span>현재 집계</span><em id="rsStamp">${stampText()}</em></div>
       <div class="rsg"><div><small>총 득표</small><strong><b data-k="tot" data-n="${d.tot}">0</b>표</strong></div>
-      ${r.ballots != null ? `<div><small>투표 참여</small><strong><b data-k="bal" data-n="${r.ballots}">0</b>회</strong></div>` : `<div><small>후보</small><strong><b data-k="cnd" data-n="${d.its.length}">0</b>가지 일</strong></div>`}
+      ${r.ballots != null ? `<div><small>총 투표 인원</small><strong><b data-k="bal" data-n="${r.ballots}">0</b>명</strong></div>` : `<div><small>후보</small><strong><b data-k="cnd" data-n="${d.its.length}">0</b>가지 일</strong></div>`}
       <div class="gold"><small>현재 1위</small><strong class="nm" id="rsTop">${esc(byNo[d.top.no].sub)}</strong><i><b data-k="topv" data-n="${d.top.votes}">0</b>표</i></div>
       <div class="gold"><small>AX10 커트라인(10위)</small><strong><b data-k="cut" data-n="${d.cut}">0</b>표</strong><i id="rsCut">${d.cutNote}</i></div>
       <div><small>Life 5가지</small><strong><b data-k="lv" data-n="${d.lv}">0</b>표</strong></div>
