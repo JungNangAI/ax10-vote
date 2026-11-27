@@ -418,17 +418,18 @@ $('#bCmt').onclick = async () => { const v = $('#cmt').value.trim(); if (!v) { t
 
 // ───────── results reveal ─────────
 async function checkResults() { const r = await rpc('ax_results', { p_round: ROUND }).catch(() => null); const pub = !!(r && r.public); $('#bResults').style.display = pub ? 'block' : 'none'; $('#bResults2').style.display = pub ? 'block' : 'none'; return r; }
+function countUp(el, n) { if (!el) return; if (!fx.motion) { el.textContent = n; return; } const t0 = performance.now(), D = 900; const st = t => { const p = Math.min(1, (t - t0) / D); el.textContent = Math.round(n * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(st); }; requestAnimationFrame(st); }
 async function showResults() {
   const r = await checkResults(); if (!r || !r.public) { toast('결과는 마감 후 공개돼요'); return; }
   show('sRes'); const box = $('#resList'); box.innerHTML = '';
   const items = r.items.slice(0, cands.length).reverse();
   const resRO = { order: r.items.slice(0, cands.length).map(x => x.no), rank: Object.fromEntries(r.items.map(x => [x.no, x.rank])) };
   for (let i = 0; i < items.length; i++) {
-    const it = items[i], c = byNo[it.no]; const d = document.createElement('div'); d.className = 'rbar'; d.style.setProperty('--c', CAT[c.cat].c);
-    d.innerHTML = `<div class="rk">${it.rank}</div><img src="${img(it.no)}" alt=""><div class="bar"><i></i><span>${esc(c.sub)}</span></div><span class="rmore" aria-hidden="true">›</span>`;
+    const it = items[i], c = byNo[it.no]; const d = document.createElement('div'); d.className = 'rbar' + (it.rank <= 10 ? ' top' : '') + (it.rank <= 3 ? ' top3' : ''); d.style.setProperty('--c', CAT[c.cat].c); d.style.setProperty('--dl', (i % 5) * 0.35 + 's');
+    d.innerHTML = `<div class="rk">${it.rank}</div><img src="${img(it.no)}" alt=""><div class="bar"><i></i><span>${esc(c.sub)}</span>${it.votes != null ? `<em class="rv"><b>0</b>표</em>` : ''}</div><span class="rmore" aria-hidden="true">›</span>`;
     d.tabIndex = 0; d.setAttribute('role', 'button'); d.setAttribute('aria-label', `${it.rank}위 ${c.sub} 자세히 보기`);
     d.onclick = () => openInfo(c, resRO); d.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openInfo(c, resRO); } };
-    box.prepend(d); await new Promise(res => setTimeout(res, fx.motion ? 160 : 0)); d.classList.add('on'); d.querySelector('i').style.width = Math.max(8, it.ratio) + '%'; buzz(5); blip(400 + i * 25, .04);
+    box.prepend(d); await new Promise(res => setTimeout(res, fx.motion ? 160 : 0)); d.classList.add('on'); d.querySelector('i').style.width = Math.max(8, it.ratio) + '%'; if (it.votes != null) countUp(d.querySelector('.rv b'), it.votes); buzz(5); blip(400 + i * 25, .04);
   }
   const cut = document.createElement('div'); cut.className = 'cut'; cut.textContent = '— 여기까지 AX10 —'; const rows = box.querySelectorAll('.rbar'); if (rows[10]) box.insertBefore(cut, rows[10]); else box.appendChild(cut);
   const wrap = document.createElement('div'); wrap.className = 'posterbox'; wrap.innerHTML = '<h3>결과 포스터</h3><p>결과를 한 장으로 정리했어요. 저장하거나 카톡으로 나눠 주세요.</p><img id="resPoster" alt="AX20 → 10 결과 포스터"><div class="row2"><a class="btn gold" id="resSave" download="AX20_10_결과포스터.png" style="text-align:center;text-decoration:none;font-size:16px;padding:14px">포스터 저장</a><button class="btn ghost" id="resShare">공유하기</button></div>';

@@ -393,3 +393,18 @@ body.nomo .pilot .on:before{animation:none}
 .rres{display:flex;align-items:center;gap:10px;margin:14px 0 4px}
 .rres b{font-size:22px;padding:4px 14px;border-radius:999px;background:#ffbf4a;color:#1a1206}
 .rres span{font-weight:700;color:#ffbf4a}
+
+/* 결과 보기: 득표수 + DRL(달리는 빛) */
+.rbar .bar{height:44px}
+.rbar .bar i{overflow:hidden;border-radius:12px;box-shadow:0 0 14px color-mix(in srgb,var(--c) 70%,transparent)}
+.rbar .bar i::after{content:'';position:absolute;top:0;bottom:0;left:-90px;width:90px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);transform:skewX(-22deg);animation:drlRun 2.2s linear infinite;animation-delay:var(--dl,0s)}
+.rbar.top .bar{box-shadow:0 0 0 1.5px color-mix(in srgb,var(--c) 75%,#fff),0 0 16px color-mix(in srgb,var(--c) 55%,transparent);animation:drlGlow 1.8s ease-in-out infinite;animation-delay:var(--dl,0s)}
+.rbar.top3 .rk{color:#ffbf4a;font-size:22px;text-shadow:0 0 12px rgba(255,191,74,.8)}
+.rbar .bar span{line-height:44px;padding-right:74px}
+.rbar .rv{position:absolute;right:10px;top:0;z-index:2;line-height:44px;font-style:normal;font-weight:900;font-size:13px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.6)}
+.rbar .rv b{font-size:20px;margin-right:1px;font-variant-numeric:tabular-nums}
+.rbar.on{animation:rowPop .5s cubic-bezier(.2,1.4,.4,1)}
+@keyframes drlRun{0%{left:-90px}60%,100%{left:105%}}
+@keyframes drlGlow{0%,100%{filter:brightness(1)}50%{filter:brightness(1.22)}}
+@keyframes rowPop{0%{transform:translateX(-26px) scale(.96)}100%{transform:none}}
+@media (prefers-reduced-motion:reduce){.rbar .bar i::after,.rbar.top .bar,.rbar.on{animation:none}}
